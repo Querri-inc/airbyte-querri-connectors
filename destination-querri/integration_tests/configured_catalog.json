@@ -1,0 +1,20 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "contacts",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "name": {"type": ["null", "string"]},
+            "email": {"type": ["null", "string"]},
+            "company": {"type": ["null", "string"]}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    }
+  ]
+}

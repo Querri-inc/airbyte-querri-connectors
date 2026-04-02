@@ -1,0 +1,22 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "example_source",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "name": {"type": ["null", "string"]},
+            "email": {"type": ["null", "string"]},
+            "score": {"type": ["null", "integer"]},
+            "_querri_source_id": {"type": "string"},
+            "_querri_source_name": {"type": "string"}
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

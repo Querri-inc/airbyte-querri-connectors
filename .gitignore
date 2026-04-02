@@ -1,0 +1,23 @@
+# Secrets
+secrets/
+*.secret
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Test cache
+.pytest_cache/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Virtual env
+.venv/
+venv/

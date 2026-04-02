@@ -1,0 +1,48 @@
+{
+  "documentationUrl": "https://docs.querri.com/api/data-api",
+  "supported_destination_sync_modes": ["overwrite", "append"],
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Querri Destination Spec",
+    "type": "object",
+    "required": ["api_key", "org_id"],
+    "properties": {
+      "api_key": {
+        "type": "string",
+        "title": "API Key",
+        "description": "Your qk_ API key from Settings → API Keys. Requires data:write and data:read scopes.",
+        "airbyte_secret": true,
+        "order": 0
+      },
+      "org_id": {
+        "type": "string",
+        "title": "Organization ID",
+        "description": "Your Querri organization ID (from Settings → Account).",
+        "order": 1
+      },
+      "base_url": {
+        "type": "string",
+        "title": "API Base URL",
+        "description": "Querri API base URL. Change only for self-hosted instances.",
+        "default": "https://app.querri.com/api/v1",
+        "order": 2
+      },
+      "source_name_prefix": {
+        "type": "string",
+        "title": "Source Name Prefix",
+        "description": "Prefix added to stream names when creating new Querri sources. E.g., 'airbyte_' turns stream 'users' into source 'airbyte_users'.",
+        "default": "airbyte_",
+        "order": 3
+      },
+      "batch_size": {
+        "type": "integer",
+        "title": "Batch Size",
+        "description": "Number of rows to send per API request. Higher values are more efficient but use more memory.",
+        "default": 10000,
+        "minimum": 1,
+        "maximum": 100000,
+        "order": 4
+      }
+    }
+  }
+}

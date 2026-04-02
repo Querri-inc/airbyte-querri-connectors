@@ -1,0 +1,19 @@
+data:
+  connectorType: source
+  definitionId: "a3f2b1c4-d5e6-4f78-9a0b-1c2d3e4f5678"
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-querri
+  name: "Querri"
+  connectorSubtype: api
+  license: MIT
+  supportLevel: community
+  tags:
+    - language:python
+    - cdk:python
+  registryOverrides:
+    oss:
+      enabled: true
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: acceptanceTests
+metadataSpecVersion: "1.0"

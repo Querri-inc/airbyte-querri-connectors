@@ -1,0 +1,34 @@
+documentationUrl: https://docs.querri.com/api/data-api
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Querri Source Spec
+  type: object
+  required:
+    - api_key
+    - org_id
+  properties:
+    api_key:
+      type: string
+      title: API Key
+      description: "Your qk_ API key from Settings → API Keys. Requires data:read scope."
+      airbyte_secret: true
+      order: 0
+    org_id:
+      type: string
+      title: Organization ID
+      description: "Your Querri organization ID (from Settings → Account)."
+      order: 1
+    base_url:
+      type: string
+      title: API Base URL
+      description: "Querri API base URL. Change only for self-hosted instances."
+      default: "https://app.querri.com/api/v1"
+      order: 2
+    source_ids:
+      type: array
+      items:
+        type: string
+      title: Source IDs
+      description: "Limit sync to specific source IDs. Leave empty to sync all accessible sources."
+      default: []
+      order: 3
