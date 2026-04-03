@@ -44,5 +44,8 @@
         "order": 4
       }
     }
+  },
+  "allowedHosts": {
+    "hosts": ["app.querri.com", "*.querri.com"]
   }
 }

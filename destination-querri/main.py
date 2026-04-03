@@ -1,8 +1,4 @@
-import sys
-
-from airbyte_cdk.entrypoint import launch
-from destination_querri import DestinationQuerri
+from destination_querri.run import run
 
 if __name__ == "__main__":
-    destination = DestinationQuerri()
-    launch(destination, sys.argv[1:])
+    run()

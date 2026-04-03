@@ -7,9 +7,15 @@ data:
   connectorSubtype: api
   license: MIT
   supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/querri
   tags:
     - language:python
     - cdk:python
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:3.0.0
+  remoteRegistries:
+    pypi:
+      enabled: true
   registryOverrides:
     oss:
       enabled: true

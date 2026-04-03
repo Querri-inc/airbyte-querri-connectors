@@ -5,8 +5,7 @@ import re
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 
 from airbyte_cdk.sources.streams import Stream
-
-from source_querri.client import QuerriClient
+from querri import Querri
 
 logger = logging.getLogger("airbyte")
 
@@ -48,7 +47,7 @@ class QuerriSourceStream(Stream):
 
     def __init__(
         self,
-        client: QuerriClient,
+        client: Querri,
         source_id: str,
         source_name: str,
         columns: List[str],
@@ -141,7 +140,7 @@ class QuerriSourceStream(Stream):
 
         while True:
             try:
-                result = self._client.read_source_data(
+                result = self._client.data.source_data(
                     self._source_id, page=page, page_size=PAGE_SIZE
                 )
             except Exception as e:
@@ -150,7 +149,7 @@ class QuerriSourceStream(Stream):
                 )
                 break
 
-            rows = result.get("data", [])
+            rows = result.data
             if not rows:
                 break
 
@@ -161,7 +160,7 @@ class QuerriSourceStream(Stream):
                 yield row
                 total_yielded += 1
 
-            total_rows = result.get("total_rows", 0)
+            total_rows = result.total_rows or 0
             if total_yielded >= total_rows:
                 break
 
@@ -180,7 +179,7 @@ class QuerriSourceStream(Stream):
     def _get_current_updated_at(self) -> Optional[str]:
         """Fetch the current updated_at from source metadata."""
         try:
-            schema = self._client.get_source(self._source_id)
-            return schema.get("updated_at")
+            source = self._client.data.source(self._source_id)
+            return source.updated_at
         except Exception:
             return self._updated_at

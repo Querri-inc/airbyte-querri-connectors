@@ -1,8 +1,4 @@
-import sys
-
-from airbyte_cdk.entrypoint import launch
-from source_querri import SourceQuerri
+from source_querri.run import main
 
 if __name__ == "__main__":
-    source = SourceQuerri()
-    launch(source, sys.argv[1:])
+    main()

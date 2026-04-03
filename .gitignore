@@ -1,6 +1,11 @@
-# Secrets
-secrets/
+# Secrets — ignore contents but allow config_bad.json (no real secrets)
+**/secrets/*
+!**/secrets/config_bad.json
+!**/secrets/.gitignore
 *.secret
+.env
+*.env
+.env.*
 
 # Python
 __pycache__/

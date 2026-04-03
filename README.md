@@ -1,6 +1,6 @@
 # Querri Airbyte Connectors
 
-Airbyte source and destination connectors for the [Querri Data API](https://docs.querri.com/api/data-api).
+Airbyte source and destination connectors for the [Querri Data API](https://docs.querri.com/api/data-api). Both connectors use the [Querri Python SDK](../querri-python-sdk/) for API access — auth, pagination, retry, and typed responses are handled automatically.
 
 ## Connectors
 
@@ -25,6 +25,7 @@ Writes data from Airbyte into Querri sources.
 - A Querri account with API access enabled
 - A `qk_` API key created at **Settings → API Keys** in Querri
 - Your Org ID from **Settings → Account**
+- The Querri Python SDK installed (`pip install -e ../querri-python-sdk/`)
 
 ### API Key Scopes
 
@@ -40,6 +41,8 @@ The destination needs `data:read` in addition to `data:write` to verify source e
 ### Source Connector
 
 ```bash
+# Install SDK and connector
+pip install -e ../querri-python-sdk/
 cd source-querri
 pip install -e .
 
@@ -56,6 +59,8 @@ python main.py read --config secrets/config.json --catalog integration_tests/con
 ### Destination Connector
 
 ```bash
+# Install SDK and connector
+pip install -e ../querri-python-sdk/
 cd destination-querri
 pip install -e .
 
@@ -94,7 +99,7 @@ Both connectors use the same connection parameters:
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `source_ids` | array | No | Limit to specific source IDs. Empty = all sources. |
+| `source_ids` | array | No | Limit to specific source IDs. Empty = all sources. Recommended for orgs with >50 sources. |
 
 ### Destination-specific configuration
 
@@ -117,40 +122,50 @@ Both connectors use the same connection parameters:
 
 ### Source: Querri → Airbyte
 
-1. **Discover**: Calls `GET /data/sources` to list all accessible sources. Each source becomes an Airbyte stream with its column schema.
-2. **Full Refresh**: Reads all data from the source via `GET /data/sources/{id}/data` with pagination (10,000 rows per page).
-3. **Incremental**: Tracks `updated_at` timestamp from source metadata. On subsequent syncs, only reads sources whose `updated_at` is newer than the last sync. Re-reads the full source data when it detects changes.
+1. **Discover**: Lists all Querri sources via SDK auto-pagination (`client.data.sources()`). Each source becomes an Airbyte stream with its column schema derived from `column_types`.
+2. **Full Refresh**: Reads all data via `client.data.source_data()` with pagination (10,000 rows per page).
+3. **Incremental**: Tracks `updated_at` timestamp from source metadata. On subsequent syncs, only reads sources whose `updated_at` is newer than the last sync.
 
 ### Destination: Airbyte → Querri
 
-1. **Check**: Calls `GET /data/sources` to verify API key and connectivity.
+1. **Check**: Verifies credentials via `client.data.sources(limit=1)`.
 2. **Stream mapping**: Maps each Airbyte stream to a Querri source by name (with configurable prefix).
-3. **Overwrite mode**: Calls `PUT /data/sources/{id}/data` to replace all data.
-4. **Append mode**: Buffers records and calls `POST /data/sources/{id}/rows` in batches.
-5. **Auto-create**: If a source doesn't exist for a stream, creates it via `POST /data/sources`.
+3. **Overwrite mode**: Calls `client.data.replace_data()` to replace all data.
+4. **Append mode**: Buffers records and calls `client.data.append_rows()` in batches.
+5. **Auto-create**: If a source doesn't exist for a stream, creates it via `client.data.create_source()`.
+
+### Error Handling & Retry
+
+The SDK provides automatic retry with exponential backoff for:
+- **429 Rate Limits**: Respects `Retry-After` header
+- **5xx Server Errors**: Retries idempotent methods (GET, PUT, DELETE)
+- Default 3 retries, configurable via SDK constructor
+
+Typed exceptions (`AuthenticationError`, `PermissionError`, `RateLimitError`, etc.) are mapped to actionable Airbyte error messages.
 
 ## Testing
 
 ### Unit Tests
 
 ```bash
-# Source connector (18 tests)
+# Source connector
 cd source-querri && pytest -v
 
-# Destination connector (12 tests)
+# Destination connector
 cd destination-querri && pytest -v
 ```
 
 ### End-to-End Tests
 
-The `e2e_test.py` script runs 26 tests against a live Querri instance, covering the full lifecycle:
+The `e2e_test.py` script runs 26 tests against a live Querri instance. **Required env vars** (no hardcoded keys):
 
 ```bash
-# Requires a running Querri instance and valid API keys
-python e2e_test.py
+export QUERRI_API_KEY=qk_...         # Read-write key
+export QUERRI_READ_ONLY_KEY=qk_...   # Read-only key (for scope tests)
+export QUERRI_ORG_ID=org_...
+export QUERRI_BASE_URL=http://localhost/api/v1  # Optional, defaults to this
 
-# Or use environment variables
-QUERRI_API_KEY=qk_... QUERRI_ORG_ID=org_... QUERRI_BASE_URL=http://localhost/api/v1 python e2e_test.py
+python e2e_test.py
 ```
 
 **E2E test coverage:**
@@ -167,17 +182,22 @@ QUERRI_API_KEY=qk_... QUERRI_ORG_ID=org_... QUERRI_BASE_URL=http://localhost/api
 ## Development
 
 ```bash
+# Install SDK first
+pip install -e ../querri-python-sdk/
+
 # Install dev dependencies
 cd source-querri && pip install -e ".[dev]"
 cd destination-querri && pip install -e ".[dev]"
 
-# Run unit tests
+# Run all unit tests
 cd source-querri && pytest -v
 cd destination-querri && pytest -v
 
-# Run E2E tests (requires running Querri instance)
-python e2e_test.py
+# Run E2E tests (requires running Querri instance + env vars)
+cd .. && python e2e_test.py
 ```
+
+See `CLAUDE.md` for architecture details, terminology, and common tasks.
 
 ## Limits
 

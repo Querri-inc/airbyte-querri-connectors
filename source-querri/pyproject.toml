@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "source-querri"
+version = "0.1.0"
+description = "Airbyte source connector for Querri"
+authors = ["Querri Inc."]
+license = "MIT"
+packages = [{ include = "source_querri" }]
+include = [
+    "source_querri/spec.yaml",
+    "source_querri/schemas/*.json",
+]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.14"
+airbyte-cdk = "^7.0"
+querri = { path = "../../querri-python-sdk", develop = true }
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0"
+pytest-mock = "^3.10"
+requests-mock = "^1.10"
+
+[tool.poetry.scripts]
+source-querri = "source_querri.run:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
