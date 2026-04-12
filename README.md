@@ -17,8 +17,8 @@ Reads data from Querri sources into Airbyte. Each Querri data source becomes an 
 Writes data from Airbyte into Querri sources.
 
 **Supported sync modes:**
-- Overwrite (replaces all data via `PUT /data/sources/{id}/data`)
-- Append (adds rows via `POST /data/sources/{id}/rows`)
+- Overwrite (replaces all data via `PUT /sources/{id}/data`)
+- Append (adds rows via `POST /sources/{id}/rows`)
 
 ## Prerequisites
 

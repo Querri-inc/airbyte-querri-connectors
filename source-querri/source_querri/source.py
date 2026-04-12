@@ -47,8 +47,9 @@ class SourceQuerri(AbstractSource):
         """Verify the API key and org_id are valid by listing sources."""
         try:
             client = self._make_client(config)
-            # Force iteration to trigger the HTTP call (SyncCursorPage is lazy)
-            next(iter(client.data.sources(limit=1)), None)
+            sources = client.sources.list()
+            # Access first item if available to verify the call succeeded
+            next(iter(sources), None)
             return True, None
         except Exception as e:
             return False, _format_error(e)
@@ -61,34 +62,34 @@ class SourceQuerri(AbstractSource):
         """
         client = self._make_client(config)
 
-        # Auto-paginating: iterates all pages
-        all_sources = list(client.data.sources())
+        # Returns List[Dict] with "id", "name" keys
+        all_sources = client.sources.list()
 
         # Optionally filter to specific source IDs
         filter_ids = config.get("source_ids", [])
         if filter_ids:
-            all_sources = [s for s in all_sources if s.id in filter_ids]
+            all_sources = [s for s in all_sources if s["id"] in filter_ids]
 
         streams = []
         for source in all_sources:
             # Fetch full schema for each source (includes column_types)
             try:
-                schema = client.data.source(source.id)
+                schema = client.sources.get(source["id"])
             except Exception as e:
                 logger.warning(
-                    f"Skipping source {source.id}: failed to get schema: {e}"
+                    f"Skipping source {source['id']}: failed to get schema: {e}"
                 )
                 continue
 
             streams.append(
                 QuerriSourceStream(
                     client=client,
-                    source_id=schema.id,
-                    source_name=schema.name,
-                    columns=schema.columns,
-                    column_types=schema.column_types or {},
-                    row_count=schema.row_count or 0,
-                    updated_at=schema.updated_at,
+                    source_id=schema["id"],
+                    source_name=schema["name"],
+                    columns=schema["columns"],
+                    column_types=schema.get("column_types") or {},
+                    row_count=schema.get("row_count") or 0,
+                    updated_at=schema.get("updated_at"),
                 )
             )
 

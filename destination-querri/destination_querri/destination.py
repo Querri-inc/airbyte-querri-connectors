@@ -1,8 +1,8 @@
 """Querri destination connector — writes data to Querri via the Data API.
 
 Supports two sync modes:
-- overwrite: Replace all data in the target source (PUT /data/sources/{id}/data)
-- append: Add rows incrementally (POST /data/sources/{id}/rows)
+- overwrite: Replace all data in the target source (PUT /sources/{id}/data)
+- append: Add rows incrementally (POST /sources/{id}/rows)
 
 Auto-creates Querri sources for new streams that don't have a matching source.
 """
@@ -59,8 +59,9 @@ class DestinationQuerri(Destination):
         """Verify API key has write access."""
         try:
             client = self._make_client(config)
-            # Force iteration to trigger the HTTP call (SyncCursorPage is lazy)
-            next(iter(client.data.sources(limit=1)), None)
+            sources = client.sources.list()
+            # Access first item if available to verify the call succeeded
+            next(iter(sources), None)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(
@@ -147,18 +148,18 @@ class DestinationQuerri(Destination):
     ):
         """Map each stream to an existing Querri source by name, or mark for creation."""
         try:
-            # Auto-paginating: iterates all pages
-            existing_sources = list(client.data.sources())
+            # Returns List[Dict] with "id", "name" keys
+            existing_sources = client.sources.list()
         except Exception as e:
             logger.warning(f"Failed to list sources for resolution: {e}")
             existing_sources = []
 
-        name_to_source = {s.name: s for s in existing_sources}
+        name_to_source = {s["name"]: s for s in existing_sources}
 
         for cfg in stream_configs.values():
             existing = name_to_source.get(cfg.querri_source_name)
             if existing:
-                cfg.querri_source_id = existing.id
+                cfg.querri_source_id = existing["id"]
                 logger.info(
                     f"Stream '{cfg.stream_name}' → existing source "
                     f"'{cfg.querri_source_name}' ({cfg.querri_source_id})"
@@ -188,7 +189,7 @@ class DestinationQuerri(Destination):
                 f"Replacing {len(records)} rows in source "
                 f"'{cfg.querri_source_name}' ({source_id})"
             )
-            result = client.data.replace_data(source_id, rows=records)
+            result = client.sources.replace_data(source_id, rows=records)
             logger.info(f"Replaced → {result.row_count} rows")
 
         elif source_id:
@@ -200,7 +201,7 @@ class DestinationQuerri(Destination):
             # Split into sub-batches if needed (API limit: 100k per request)
             for i in range(0, len(records), MAX_BATCH_SIZE):
                 batch = records[i : i + MAX_BATCH_SIZE]
-                result = client.data.append_rows(source_id, rows=batch)
+                result = client.sources.append_rows(source_id, rows=batch)
                 logger.info(
                     f"Appended batch ({len(batch)} rows) → "
                     f"total: {result.row_count}"
@@ -214,7 +215,7 @@ class DestinationQuerri(Destination):
             )
             # Create requires rows, split if over the limit
             first_batch = records[:MAX_BATCH_SIZE]
-            result = client.data.create_source(
+            result = client.sources.create_data_source(
                 name=cfg.querri_source_name, rows=first_batch
             )
             cfg.querri_source_id = result.id
@@ -228,7 +229,7 @@ class DestinationQuerri(Destination):
             if remaining:
                 for i in range(0, len(remaining), MAX_BATCH_SIZE):
                     batch = remaining[i : i + MAX_BATCH_SIZE]
-                    client.data.append_rows(cfg.querri_source_id, rows=batch)
+                    client.sources.append_rows(cfg.querri_source_id, rows=batch)
                     logger.info(f"Appended overflow batch ({len(batch)} rows)")
 
     def _flush_append_buffers(

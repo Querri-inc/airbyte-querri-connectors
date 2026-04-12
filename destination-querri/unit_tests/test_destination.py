@@ -38,21 +38,21 @@ from destination_querri.destination import (
 def _mock_client():
     """Create a MagicMock Querri SDK client with sensible defaults."""
     client = MagicMock()
-    client.data.sources.return_value = []
-    client.data.create_source.return_value = Source(
+    client.sources.list.return_value = []
+    client.sources.create_data_source.return_value = Source(
         id="new-src", name="test", columns=["col"], row_count=1,
     )
-    client.data.append_rows.return_value = DataWriteResult(
+    client.sources.append_rows.return_value = DataWriteResult(
         id="src-1", name="test", columns=["col"], row_count=1,
     )
-    client.data.replace_data.return_value = DataWriteResult(
+    client.sources.replace_data.return_value = DataWriteResult(
         id="src-1", name="test", columns=["col"], row_count=1,
     )
     return client
 
 
-def _source(id="src-1", name="airbyte_users", columns=None, row_count=0, **kw):
-    return Source(id=id, name=name, columns=columns or [], row_count=row_count, **kw)
+def _source_dict(id="src-1", name="airbyte_users", columns=None, row_count=0):
+    return {"id": id, "name": name, "columns": columns or [], "row_count": row_count}
 
 
 def _catalog(streams_config):
@@ -100,13 +100,13 @@ class TestDestinationCheck:
             result = dest.check(MagicMock(), config)
 
         assert result.status.value == "SUCCEEDED"
-        client.data.sources.assert_called_once_with(limit=1)
+        client.sources.list.assert_called_once()
 
     def test_check_auth_failure(self):
         dest = DestinationQuerri()
         config = {"api_key": "qk_bad", "org_id": "org-1"}
         client = _mock_client()
-        client.data.sources.side_effect = AuthenticationError(
+        client.sources.list.side_effect = AuthenticationError(
             "Invalid API key", status=401
         )
 
@@ -120,7 +120,7 @@ class TestDestinationCheck:
         dest = DestinationQuerri()
         config = {"api_key": "qk_test", "org_id": "org-1"}
         client = _mock_client()
-        client.data.sources.side_effect = ServerError(
+        client.sources.list.side_effect = ServerError(
             "Internal error", status=500
         )
 
@@ -135,11 +135,11 @@ class TestDestinationCheck:
 
 
 class TestSourceResolution:
-    def test_resolves_existing_source(self):
+    def test_resolves_existing_source_dict(self):
         dest = DestinationQuerri()
         client = _mock_client()
-        client.data.sources.return_value = [
-            _source(id="src-1", name="airbyte_users"),
+        client.sources.list.return_value = [
+            _source_dict(id="src-1", name="airbyte_users"),
         ]
 
         configs = {
@@ -156,7 +156,7 @@ class TestSourceResolution:
     def test_marks_missing_source_for_creation(self):
         dest = DestinationQuerri()
         client = _mock_client()
-        client.data.sources.return_value = []
+        client.sources.list.return_value = []
 
         configs = {
             "users": _StreamConfig(
@@ -173,7 +173,7 @@ class TestSourceResolution:
         """If list_sources() fails, resolution proceeds with empty list."""
         dest = DestinationQuerri()
         client = _mock_client()
-        client.data.sources.side_effect = ServerError("Timeout", status=503)
+        client.sources.list.side_effect = ServerError("Timeout", status=503)
 
         configs = {
             "users": _StreamConfig(
@@ -189,9 +189,9 @@ class TestSourceResolution:
     def test_resolves_multiple_streams(self):
         dest = DestinationQuerri()
         client = _mock_client()
-        client.data.sources.return_value = [
-            _source(id="src-1", name="airbyte_users"),
-            _source(id="src-2", name="airbyte_orders"),
+        client.sources.list.return_value = [
+            _source_dict(id="src-1", name="airbyte_users"),
+            _source_dict(id="src-2", name="airbyte_orders"),
         ]
 
         configs = {
@@ -220,8 +220,8 @@ class TestFlushStream:
         records = [{"name": "Alice"}, {"name": "Bob"}]
         dest._flush_stream(client, cfg, records, is_overwrite=True)
 
-        client.data.replace_data.assert_called_once_with("src-1", rows=records)
-        client.data.append_rows.assert_not_called()
+        client.sources.replace_data.assert_called_once_with("src-1", rows=records)
+        client.sources.append_rows.assert_not_called()
 
     def test_append_calls_append_rows(self):
         dest = DestinationQuerri()
@@ -233,8 +233,8 @@ class TestFlushStream:
         records = [{"name": "Alice"}]
         dest._flush_stream(client, cfg, records, is_overwrite=False)
 
-        client.data.append_rows.assert_called_once_with("src-1", rows=records)
-        client.data.replace_data.assert_not_called()
+        client.sources.append_rows.assert_called_once_with("src-1", rows=records)
+        client.sources.replace_data.assert_not_called()
 
     def test_creates_source_when_missing(self):
         dest = DestinationQuerri()
@@ -246,7 +246,7 @@ class TestFlushStream:
         records = [{"name": "Alice"}]
         dest._flush_stream(client, cfg, records, is_overwrite=False)
 
-        client.data.create_source.assert_called_once_with(
+        client.sources.create_data_source.assert_called_once_with(
             name="airbyte_users", rows=records
         )
         assert cfg.querri_source_id == "new-src"
@@ -260,9 +260,9 @@ class TestFlushStream:
 
         dest._flush_stream(client, cfg, [], is_overwrite=False)
 
-        client.data.append_rows.assert_not_called()
-        client.data.replace_data.assert_not_called()
-        client.data.create_source.assert_not_called()
+        client.sources.append_rows.assert_not_called()
+        client.sources.replace_data.assert_not_called()
+        client.sources.create_data_source.assert_not_called()
 
     def test_overwrite_with_no_source_creates(self):
         """Overwrite mode with no existing source — creates instead of replacing."""
@@ -276,8 +276,8 @@ class TestFlushStream:
         dest._flush_stream(client, cfg, records, is_overwrite=True)
 
         # Should create, not replace (no source_id to replace)
-        client.data.create_source.assert_called_once()
-        client.data.replace_data.assert_not_called()
+        client.sources.create_data_source.assert_called_once()
+        client.sources.replace_data.assert_not_called()
 
     def test_append_batches_over_max_batch_size(self):
         """Records exceeding MAX_BATCH_SIZE are split into batches."""
@@ -291,9 +291,9 @@ class TestFlushStream:
         records = [{"i": i} for i in range(MAX_BATCH_SIZE + 5)]
         dest._flush_stream(client, cfg, records, is_overwrite=False)
 
-        assert client.data.append_rows.call_count == 2
-        first_call = client.data.append_rows.call_args_list[0]
-        second_call = client.data.append_rows.call_args_list[1]
+        assert client.sources.append_rows.call_count == 2
+        first_call = client.sources.append_rows.call_args_list[0]
+        second_call = client.sources.append_rows.call_args_list[1]
         assert len(first_call.kwargs["rows"]) == MAX_BATCH_SIZE
         assert len(second_call.kwargs["rows"]) == 5
 
@@ -309,12 +309,12 @@ class TestFlushStream:
         dest._flush_stream(client, cfg, records, is_overwrite=False)
 
         # Should create with first MAX_BATCH_SIZE, then append the rest
-        client.data.create_source.assert_called_once()
-        create_rows = client.data.create_source.call_args.kwargs["rows"]
+        client.sources.create_data_source.assert_called_once()
+        create_rows = client.sources.create_data_source.call_args.kwargs["rows"]
         assert len(create_rows) == MAX_BATCH_SIZE
 
-        client.data.append_rows.assert_called_once()
-        append_rows = client.data.append_rows.call_args.kwargs["rows"]
+        client.sources.append_rows.assert_called_once()
+        append_rows = client.sources.append_rows.call_args.kwargs["rows"]
         assert len(append_rows) == 10
 
     def test_exact_max_batch_size_no_split(self):
@@ -328,8 +328,8 @@ class TestFlushStream:
         records = [{"i": i} for i in range(MAX_BATCH_SIZE)]
         dest._flush_stream(client, cfg, records, is_overwrite=False)
 
-        client.data.append_rows.assert_called_once()
-        assert len(client.data.append_rows.call_args.kwargs["rows"]) == MAX_BATCH_SIZE
+        client.sources.append_rows.assert_called_once()
+        assert len(client.sources.append_rows.call_args.kwargs["rows"]) == MAX_BATCH_SIZE
 
 
 # ── Write Flow ──
@@ -348,15 +348,15 @@ class TestWriteFlow:
         ]
 
         client = _mock_client()
-        client.data.sources.return_value = [
-            _source(id="src-1", name="airbyte_users"),
+        client.sources.list.return_value = [
+            _source_dict(id="src-1", name="airbyte_users"),
         ]
 
         with patch.object(dest, "_make_client", return_value=client):
             state_msgs = list(dest.write(config, catalog, iter(messages)))
 
         assert len(state_msgs) == 1
-        client.data.append_rows.assert_called()
+        client.sources.append_rows.assert_called()
 
     def test_overwrite_mode_waits_for_all_records(self):
         dest = DestinationQuerri()
@@ -370,19 +370,19 @@ class TestWriteFlow:
         ]
 
         client = _mock_client()
-        client.data.sources.return_value = [
-            _source(id="src-1", name="airbyte_users"),
+        client.sources.list.return_value = [
+            _source_dict(id="src-1", name="airbyte_users"),
         ]
 
         with patch.object(dest, "_make_client", return_value=client):
             list(dest.write(config, catalog, iter(messages)))
 
         # Overwrite flushes at the end with ALL records
-        client.data.replace_data.assert_called_once()
-        call_rows = client.data.replace_data.call_args.kwargs["rows"]
+        client.sources.replace_data.assert_called_once()
+        call_rows = client.sources.replace_data.call_args.kwargs["rows"]
         assert len(call_rows) == 2
 
-    def test_auto_creates_source(self):
+    def test_auto_creates_source_dict(self):
         dest = DestinationQuerri()
         config = {"api_key": "qk_test", "org_id": "org-1"}
         catalog = _catalog({"orders": DestinationSyncMode.append})
@@ -390,12 +390,12 @@ class TestWriteFlow:
         messages = [_record("orders", {"amount": 100})]
 
         client = _mock_client()
-        client.data.sources.return_value = []
+        client.sources.list.return_value = []
 
         with patch.object(dest, "_make_client", return_value=client):
             list(dest.write(config, catalog, iter(messages)))
 
-        client.data.create_source.assert_called_once_with(
+        client.sources.create_data_source.assert_called_once_with(
             name="airbyte_orders", rows=[{"amount": 100}]
         )
 
@@ -410,13 +410,13 @@ class TestWriteFlow:
         messages = [_record("contacts", {"name": "Alice"})]
 
         client = _mock_client()
-        client.data.sources.return_value = []
+        client.sources.list.return_value = []
 
         with patch.object(dest, "_make_client", return_value=client):
             list(dest.write(config, catalog, iter(messages)))
 
-        client.data.create_source.assert_called_once()
-        assert client.data.create_source.call_args.kwargs["name"] == "zapier_contacts"
+        client.sources.create_data_source.assert_called_once()
+        assert client.sources.create_data_source.call_args.kwargs["name"] == "zapier_contacts"
 
     def test_batch_size_triggers_mid_sync_flush(self):
         """When buffer hits batch_size, it flushes immediately for append mode."""
@@ -431,15 +431,15 @@ class TestWriteFlow:
         ]
 
         client = _mock_client()
-        client.data.sources.return_value = [
-            _source(id="src-1", name="airbyte_users"),
+        client.sources.list.return_value = [
+            _source_dict(id="src-1", name="airbyte_users"),
         ]
 
         with patch.object(dest, "_make_client", return_value=client):
             list(dest.write(config, catalog, iter(messages)))
 
         # First flush at batch_size=2, second flush at end with remaining 1
-        assert client.data.append_rows.call_count == 2
+        assert client.sources.append_rows.call_count == 2
 
     def test_batch_size_capped_at_max(self):
         """batch_size over MAX_BATCH_SIZE is capped."""
@@ -453,14 +453,14 @@ class TestWriteFlow:
         # Just verify the write doesn't crash — the cap is applied internally
         messages = [_record("users", {"name": "Alice"})]
         client = _mock_client()
-        client.data.sources.return_value = [
-            _source(id="src-1", name="airbyte_users"),
+        client.sources.list.return_value = [
+            _source_dict(id="src-1", name="airbyte_users"),
         ]
 
         with patch.object(dest, "_make_client", return_value=client):
             list(dest.write(config, catalog, iter(messages)))
 
-        client.data.append_rows.assert_called()
+        client.sources.append_rows.assert_called()
 
     def test_state_before_records_is_noop(self):
         """STATE message before any records should yield state without errors."""
@@ -471,8 +471,8 @@ class TestWriteFlow:
         messages = [_state(), _record("users", {"name": "Alice"})]
 
         client = _mock_client()
-        client.data.sources.return_value = [
-            _source(id="src-1", name="airbyte_users"),
+        client.sources.list.return_value = [
+            _source_dict(id="src-1", name="airbyte_users"),
         ]
 
         with patch.object(dest, "_make_client", return_value=client):
@@ -480,7 +480,7 @@ class TestWriteFlow:
 
         assert len(state_msgs) == 1
         # The final record is flushed at end
-        client.data.append_rows.assert_called_once()
+        client.sources.append_rows.assert_called_once()
 
     def test_multiple_states_flush_between(self):
         """Each STATE flushes append buffers — multiple states work correctly."""
@@ -496,8 +496,8 @@ class TestWriteFlow:
         ]
 
         client = _mock_client()
-        client.data.sources.return_value = [
-            _source(id="src-1", name="airbyte_users"),
+        client.sources.list.return_value = [
+            _source_dict(id="src-1", name="airbyte_users"),
         ]
 
         with patch.object(dest, "_make_client", return_value=client):
@@ -505,7 +505,7 @@ class TestWriteFlow:
 
         assert len(state_msgs) == 2
         # Two flushes from STATE messages (1 record each)
-        assert client.data.append_rows.call_count == 2
+        assert client.sources.append_rows.call_count == 2
 
     def test_multiple_streams_mixed_modes(self):
         """Append and overwrite streams in same sync."""
@@ -525,20 +525,20 @@ class TestWriteFlow:
         ]
 
         client = _mock_client()
-        client.data.sources.return_value = [
-            _source(id="src-1", name="airbyte_users"),
-            _source(id="src-2", name="airbyte_metrics"),
+        client.sources.list.return_value = [
+            _source_dict(id="src-1", name="airbyte_users"),
+            _source_dict(id="src-2", name="airbyte_metrics"),
         ]
 
         with patch.object(dest, "_make_client", return_value=client):
             state_msgs = list(dest.write(config, catalog, iter(messages)))
 
         # Append stream: flushed at STATE (Alice), then at end (Bob)
-        assert client.data.append_rows.call_count == 2
+        assert client.sources.append_rows.call_count == 2
 
         # Overwrite stream: all records flushed at end
-        client.data.replace_data.assert_called_once()
-        replace_rows = client.data.replace_data.call_args.kwargs["rows"]
+        client.sources.replace_data.assert_called_once()
+        replace_rows = client.sources.replace_data.call_args.kwargs["rows"]
         assert len(replace_rows) == 2
 
     def test_unconfigured_stream_records_ignored(self):
@@ -553,16 +553,16 @@ class TestWriteFlow:
         ]
 
         client = _mock_client()
-        client.data.sources.return_value = [
-            _source(id="src-1", name="airbyte_users"),
+        client.sources.list.return_value = [
+            _source_dict(id="src-1", name="airbyte_users"),
         ]
 
         with patch.object(dest, "_make_client", return_value=client):
             list(dest.write(config, catalog, iter(messages)))
 
         # Only the "users" record should be written
-        client.data.append_rows.assert_called_once()
-        rows = client.data.append_rows.call_args.kwargs["rows"]
+        client.sources.append_rows.assert_called_once()
+        rows = client.sources.append_rows.call_args.kwargs["rows"]
         assert len(rows) == 1
         assert rows[0]["name"] == "Alice"
 
@@ -574,7 +574,7 @@ class TestErrorHandling:
     def test_create_source_failure_raises(self):
         dest = DestinationQuerri()
         client = _mock_client()
-        client.data.create_source.side_effect = ServerError(
+        client.sources.create_data_source.side_effect = ServerError(
             "Internal error", status=500
         )
 
@@ -587,7 +587,7 @@ class TestErrorHandling:
     def test_append_failure_raises(self):
         dest = DestinationQuerri()
         client = _mock_client()
-        client.data.append_rows.side_effect = RateLimitError(
+        client.sources.append_rows.side_effect = RateLimitError(
             "Rate limited", status=429, retry_after=60.0
         )
 
@@ -600,7 +600,7 @@ class TestErrorHandling:
     def test_replace_failure_raises(self):
         dest = DestinationQuerri()
         client = _mock_client()
-        client.data.replace_data.side_effect = NotFoundError(
+        client.sources.replace_data.side_effect = NotFoundError(
             "Source not found", status=404
         )
 
@@ -639,11 +639,11 @@ class TestFlushAppendBuffers:
         dest._flush_append_buffers(client, configs, buffers, DEFAULT_BATCH_SIZE)
 
         # Append stream flushed
-        client.data.append_rows.assert_called_once()
+        client.sources.append_rows.assert_called_once()
         assert buffers["append_stream"] == []
 
         # Overwrite stream NOT flushed
-        client.data.replace_data.assert_not_called()
+        client.sources.replace_data.assert_not_called()
         assert buffers["overwrite_stream"] == [{"b": 2}]
 
     def test_empty_buffers_noop(self):
@@ -658,4 +658,4 @@ class TestFlushAppendBuffers:
         buffers = {"users": []}
 
         dest._flush_append_buffers(client, configs, buffers, DEFAULT_BATCH_SIZE)
-        client.data.append_rows.assert_not_called()
+        client.sources.append_rows.assert_not_called()

@@ -49,11 +49,11 @@ The destination requires both `data:read` and `data:write` scopes. The `data:rea
 
 ### Overwrite Mode
 
-Replaces all existing data in the target Querri source with the incoming records. Uses the `PUT /data/sources/{id}/data` endpoint. All records are buffered in memory before the replacement write to avoid partial overwrites.
+Replaces all existing data in the target Querri source with the incoming records. Uses the `PUT /sources/{id}/data` endpoint. All records are buffered in memory before the replacement write to avoid partial overwrites.
 
 ### Append Mode
 
-Adds new rows to the target Querri source without removing existing data. Uses the `POST /data/sources/{id}/rows` endpoint. Records are buffered and flushed in batches (controlled by the `batch_size` configuration).
+Adds new rows to the target Querri source without removing existing data. Uses the `POST /sources/{id}/rows` endpoint. Records are buffered and flushed in batches (controlled by the `batch_size` configuration).
 
 ## Stream-to-Source Mapping
 
@@ -73,7 +73,7 @@ For example, with the default prefix `airbyte_`:
 
 ### Auto-Creation of Sources
 
-If a Querri source does not already exist for a given stream, the connector automatically creates it via `POST /data/sources`. The new source's schema is inferred from the first batch of records. Subsequent batches are appended to the newly created source.
+If a Querri source does not already exist for a given stream, the connector automatically creates it via `POST /sources`. The new source's schema is inferred from the first batch of records. Subsequent batches are appended to the newly created source.
 
 This means you do not need to pre-create Querri sources before running a sync -- the connector handles it.
 

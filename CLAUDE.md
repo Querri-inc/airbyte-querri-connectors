@@ -59,27 +59,27 @@ QUERRI_API_KEY=qk_... QUERRI_READ_ONLY_KEY=qk_... QUERRI_ORG_ID=org_... python e
 
 ### Source Connector Flow
 
-1. **Check**: `client.data.sources(limit=1)` — verifies credentials.
-2. **Discover**: `list(client.data.sources())` auto-paginates all sources. For each, calls `client.data.source(id)` to get `column_types` for JSON schema generation.
-3. **Read**: `QuerriSourceStream.read_records()` paginates through `client.data.source_data()` in 10k-row pages. Enriches each row with `_querri_source_id` and `_querri_source_name`.
+1. **Check**: `client.sources.list()` — verifies credentials.
+2. **Discover**: `client.sources.list()` returns all sources as `List[Dict]`. For each, calls `client.sources.get(id)` to get `column_types` for JSON schema generation. Both return dicts (access via `source["id"]`, `source["name"]`).
+3. **Read**: `QuerriSourceStream.read_records()` paginates through `client.sources.source_data()` in 10k-row pages. Enriches each row with `_querri_source_id` and `_querri_source_name`.
 4. **Incremental**: Tracks `updated_at` cursor per source. Skips unchanged sources.
 
 ### Destination Connector Flow
 
-1. **Check**: `client.data.sources(limit=1)` — verifies credentials.
-2. **Resolve**: Maps each Airbyte stream to an existing Querri source by name (`airbyte_` prefix).
+1. **Check**: `client.sources.list()` — verifies credentials.
+2. **Resolve**: Maps each Airbyte stream to an existing Querri source by name (`airbyte_` prefix). `list()` returns `List[Dict]` — access via `source["name"]`, `source["id"]`.
 3. **Buffer**: Collects records in memory per stream.
 4. **Flush**: On state message or end-of-input:
-   - **Append mode**: `client.data.append_rows()` in batches of 10k.
-   - **Overwrite mode**: `client.data.replace_data()` with all buffered records.
-   - **New source**: `client.data.create_source()` then append overflow.
+   - **Append mode**: `client.sources.append_rows()` in batches of 10k.
+   - **Overwrite mode**: `client.sources.replace_data()` with all buffered records.
+   - **New source**: `client.sources.create_data_source()` then append overflow.
 
 ### SDK Integration
 
 The connectors use `from querri import Querri` with:
 - `host` parameter (SDK appends `/api/v1`): strip suffix from Airbyte's `base_url` config.
-- Auto-paginating `client.data.sources()` — fixes the old single-page bug.
-- Typed models: `Source`, `DataWriteResult`, `DeleteResult`, `DataPage`.
+- All methods via `client.sources.*` (the `client.data` namespace no longer exists).
+- `list()` and `get()` return plain dicts (access via `["key"]`). `create_data_source()`, `source_data()`, `append_rows()`, `replace_data()` still return Pydantic models (`Source`, `DataPage`, `DataWriteResult`).
 - Built-in retry: 429 with Retry-After, 5xx with exponential backoff (3 retries default).
 - Typed exceptions: `AuthenticationError`, `PermissionError`, `RateLimitError`, `NotFoundError`.
 
@@ -87,13 +87,13 @@ The connectors use `from querri import Querri` with:
 
 | Endpoint | SDK Method | Used By |
 |----------|-----------|---------|
-| `GET /data/sources` | `client.data.sources()` | Both (discovery, resolution) |
-| `GET /data/sources/{id}` | `client.data.source(id)` | Source (schema + column_types) |
-| `GET /data/sources/{id}/data` | `client.data.source_data(id)` | Source (read records) |
-| `POST /data/sources` | `client.data.create_source()` | Destination (new sources) |
-| `POST /data/sources/{id}/rows` | `client.data.append_rows()` | Destination (append mode) |
-| `PUT /data/sources/{id}/data` | `client.data.replace_data()` | Destination (overwrite mode) |
-| `DELETE /data/sources/{id}` | `client.data.delete_source()` | E2E tests (cleanup) |
+| `GET /sources` | `client.sources.list()` | Both (discovery, resolution) |
+| `GET /sources/{id}` | `client.sources.get(id)` | Source (schema + column_types) |
+| `GET /sources/{id}/data` | `client.sources.source_data(id)` | Source (read records) |
+| `POST /sources` | `client.sources.create_data_source()` | Destination (new sources) |
+| `POST /sources/{id}/rows` | `client.sources.append_rows()` | Destination (append mode) |
+| `PUT /sources/{id}/data` | `client.sources.replace_data()` | Destination (overwrite mode) |
+| `DELETE /sources/{id}` | `client.sources.delete()` | E2E tests (cleanup) |
 
 ## Common Tasks
 
