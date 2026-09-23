@@ -17,8 +17,8 @@ Reads data from Querri sources into Airbyte. Each Querri data source becomes an 
 Writes data from Airbyte into Querri sources.
 
 **Supported sync modes:**
-- Overwrite (replaces all data via `PUT /data/sources/{id}/data`)
-- Append (adds rows via `POST /data/sources/{id}/rows`)
+- Overwrite (replaces all data via `PUT /sources/{id}/data`)
+- Append (adds rows via `POST /sources/{id}/rows`)
 
 ## Prerequisites
 
@@ -122,17 +122,17 @@ Both connectors use the same connection parameters:
 
 ### Source: Querri → Airbyte
 
-1. **Discover**: Lists all Querri sources via SDK auto-pagination (`client.data.sources()`). Each source becomes an Airbyte stream with its column schema derived from `column_types`.
-2. **Full Refresh**: Reads all data via `client.data.source_data()` with pagination (10,000 rows per page).
+1. **Discover**: Lists all Querri sources via SDK auto-pagination (`client.sources.list()`). Each source becomes an Airbyte stream with its column schema derived from `column_types`.
+2. **Full Refresh**: Reads all data via `client.sources.source_data()` with pagination (10,000 rows per page).
 3. **Incremental**: Tracks `updated_at` timestamp from source metadata. On subsequent syncs, only reads sources whose `updated_at` is newer than the last sync.
 
 ### Destination: Airbyte → Querri
 
-1. **Check**: Verifies credentials via `client.data.sources(limit=1)`.
+1. **Check**: Verifies credentials via `client.sources.list(limit=1)`.
 2. **Stream mapping**: Maps each Airbyte stream to a Querri source by name (with configurable prefix).
-3. **Overwrite mode**: Calls `client.data.replace_data()` to replace all data.
-4. **Append mode**: Buffers records and calls `client.data.append_rows()` in batches.
-5. **Auto-create**: If a source doesn't exist for a stream, creates it via `client.data.create_source()`.
+3. **Overwrite mode**: Calls `client.sources.replace_data()` to replace all data.
+4. **Append mode**: Buffers records and calls `client.sources.append_rows()` in batches.
+5. **Auto-create**: If a source doesn't exist for a stream, creates it via `client.sources.create_data_source()`.
 
 ### Error Handling & Retry
 
