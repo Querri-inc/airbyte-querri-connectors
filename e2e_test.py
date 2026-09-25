@@ -19,6 +19,7 @@ sys.path.insert(0, "source-querri")
 sys.path.insert(0, "destination-querri")
 
 from querri import Querri
+from querri.types.data import Source
 
 # ── Configuration ──
 
@@ -80,9 +81,16 @@ def rw_client():
 def ro_client():
     return Querri(api_key=READ_ONLY_KEY, org_id=ORG_ID, host=_HOST)
 
+def _sources(client, **kwargs):
+    """List sources as typed models (the SDK's sources.list() yields dicts)."""
+    return [Source.model_validate(s) for s in client.sources.list(**kwargs)]
+
+def _source(client, source_id):
+    return Source.model_validate(client.sources.get(source_id))
+
 def find_source_by_name(client, name):
     """Find a source by exact name match using SDK auto-pagination."""
-    for source in client.data.sources():
+    for source in _sources(client, limit=100):
         if source.name == name:
             return source
     return None
@@ -96,18 +104,18 @@ def find_source_by_name(client, name):
 def test_check_rw():
     client = rw_client()
     # Force iteration to verify credentials
-    next(iter(client.data.sources(limit=1)), None)
+    next(iter(client.sources.list(limit=1)), None)
 
 @test("Check connection with read-only key")
 def test_check_ro():
     client = ro_client()
-    next(iter(client.data.sources(limit=1)), None)
+    next(iter(client.sources.list(limit=1)), None)
 
 @test("Check connection with invalid key fails")
 def test_check_invalid():
     client = Querri(api_key="qk_invalid", org_id=ORG_ID, host=_HOST)
     try:
-        next(iter(client.data.sources(limit=1)), None)
+        next(iter(client.sources.list(limit=1)), None)
         assert False, "Should have raised"
     except Exception as e:
         assert "401" in str(e) or "invalid" in str(e).lower() or "authentication" in str(e).lower(), f"Unexpected error: {e}"
@@ -116,7 +124,7 @@ def test_check_invalid():
 def test_check_wrong_org():
     client = Querri(api_key=API_KEY, org_id="org_nonexistent", host=_HOST)
     try:
-        next(iter(client.data.sources(limit=1)), None)
+        next(iter(client.sources.list(limit=1)), None)
         assert False, "Should have raised"
     except Exception as e:
         assert "401" in str(e) or "invalid" in str(e).lower() or "authentication" in str(e).lower() or "500" in str(e), f"Unexpected error: {e}"
@@ -134,7 +142,7 @@ def test_create_source():
         {"name": "Bob", "age": 25, "city": "LA"},
         {"name": "Charlie", "age": 35, "city": "Chicago"},
     ]
-    result = client.data.create_source(name="e2e_test_crud", rows=rows)
+    result = client.sources.create_data_source(name="e2e_test_crud", rows=rows)
     assert result.id, "No source ID returned"
     assert result.name == "e2e_test_crud"
     assert result.row_count == 3
@@ -144,7 +152,7 @@ def test_create_source():
 @test("List sources includes created source")
 def test_list_sources():
     client = rw_client()
-    sources = list(client.data.sources())
+    sources = list(_sources(client, limit=100))
     assert isinstance(sources, list)
     names = [s.name for s in sources]
     assert "e2e_test_crud" in names, f"Created source not in list: {names[:5]}"
@@ -153,7 +161,7 @@ def test_list_sources():
 def test_get_source():
     client = rw_client()
     source_id = _created_source_ids[-1]
-    result = client.data.source(source_id)
+    result = _source(client, source_id)
     assert result.id == source_id
     assert result.name == "e2e_test_crud"
     assert "name" in result.columns
@@ -162,7 +170,7 @@ def test_get_source():
 def test_read_data():
     client = rw_client()
     source_id = _created_source_ids[-1]
-    result = client.data.source_data(source_id, page=1, page_size=100)
+    result = client.sources.source_data(source_id, page=1, page_size=100)
     assert result.total_rows == 3
     assert len(result.data) == 3
     names = {r["name"] for r in result.data}
@@ -181,14 +189,14 @@ def test_append_rows():
         {"name": "Diana", "age": 28, "city": "Seattle"},
         {"name": "Eve", "age": 32, "city": "Boston"},
     ]
-    result = client.data.append_rows(source_id, rows=new_rows)
+    result = client.sources.append_rows(source_id, rows=new_rows)
     assert result.row_count == 5, f"Expected 5 rows, got {result.row_count}"
 
 @test("Read after append shows all rows")
 def test_read_after_append():
     client = rw_client()
     source_id = _created_source_ids[-1]
-    result = client.data.source_data(source_id)
+    result = client.sources.source_data(source_id)
     assert result.total_rows == 5
     names = {r["name"] for r in result.data}
     assert "Diana" in names
@@ -207,7 +215,7 @@ def test_replace_data():
         {"name": "Xander", "score": 100},
         {"name": "Yara", "score": 200},
     ]
-    result = client.data.replace_data(source_id, rows=new_rows)
+    result = client.sources.replace_data(source_id, rows=new_rows)
     assert result.row_count == 2
     assert "score" in result.columns
 
@@ -215,7 +223,7 @@ def test_replace_data():
 def test_read_after_replace():
     client = rw_client()
     source_id = _created_source_ids[-1]
-    result = client.data.source_data(source_id)
+    result = client.sources.source_data(source_id)
     assert result.total_rows == 2
     names = {r["name"] for r in result.data}
     assert names == {"Xander", "Yara"}, f"Unexpected names: {names}"
@@ -229,15 +237,14 @@ def test_read_after_replace():
 def test_delete_source():
     client = rw_client()
     source_id = _created_source_ids[-1]
-    result = client.data.delete_source(source_id)
-    assert result.deleted is True
+    client.sources.delete(source_id)
     _created_source_ids.remove(source_id)
 
 @test("Deleted source returns 404")
 def test_deleted_404():
     client = rw_client()
     try:
-        client.data.source("00000000-0000-0000-0000-000000000000")
+        _source(client, "00000000-0000-0000-0000-000000000000")
         assert False, "Should have raised 404"
     except Exception as e:
         assert "404" in str(e) or "not found" in str(e).lower(), f"Expected 404, got: {e}"
@@ -250,14 +257,14 @@ def test_deleted_404():
 @test("Read-only key can list sources")
 def test_ro_list():
     client = ro_client()
-    sources = list(client.data.sources(limit=5))
+    sources = list(_sources(client, limit=100))
     assert isinstance(sources, list)
 
 @test("Read-only key cannot create source")
 def test_ro_cannot_create():
     client = ro_client()
     try:
-        client.data.create_source(name="should_fail", rows=[{"x": 1}])
+        client.sources.create_data_source(name="should_fail", rows=[{"x": 1}])
         assert False, "Should have raised permission error"
     except Exception as e:
         assert "403" in str(e) or "scope" in str(e).lower() or "permission" in str(e).lower(), f"Unexpected error: {e}"
@@ -272,21 +279,21 @@ def test_pagination():
     client = rw_client()
     # Create a source with enough rows to paginate
     rows = [{"idx": i, "val": f"row_{i}"} for i in range(25)]
-    result = client.data.create_source(name="e2e_test_pagination", rows=rows)
+    result = client.sources.create_data_source(name="e2e_test_pagination", rows=rows)
     _created_source_ids.append(result.id)
     assert result.row_count == 25
 
     # Read page 1
-    page1 = client.data.source_data(result.id, page=1, page_size=10)
+    page1 = client.sources.source_data(result.id, page=1, page_size=10)
     assert len(page1.data) == 10
     assert page1.total_rows == 25
 
     # Read page 2
-    page2 = client.data.source_data(result.id, page=2, page_size=10)
+    page2 = client.sources.source_data(result.id, page=2, page_size=10)
     assert len(page2.data) == 10
 
     # Read page 3
-    page3 = client.data.source_data(result.id, page=3, page_size=10)
+    page3 = client.sources.source_data(result.id, page=3, page_size=10)
     assert len(page3.data) == 5
 
 
@@ -412,7 +419,7 @@ def test_dest_write_append():
     assert source is not None, "Destination didn't create source 'airbyte_e2e_dest_append'"
     _created_source_ids.append(source.id)
 
-    data = client.data.source_data(source.id)
+    data = client.sources.source_data(source.id)
     assert data.total_rows == 2
     products = {r["product"] for r in data.data}
     assert products == {"Widget", "Gadget"}
@@ -430,9 +437,9 @@ def test_dest_overwrite():
     client = rw_client()
     existing = find_source_by_name(client, "airbyte_e2e_dest_overwrite")
     if existing:
-        client.data.delete_source(existing.id)
+        client.sources.delete(existing.id)
 
-    result = client.data.create_source(
+    result = client.sources.create_data_source(
         name="airbyte_e2e_dest_overwrite",
         rows=[{"old": "data", "should": "vanish"}],
     )
@@ -463,7 +470,7 @@ def test_dest_overwrite():
 
     # Old data should be gone
     source = find_source_by_name(client, "airbyte_e2e_dest_overwrite")
-    data = client.data.source_data(source.id)
+    data = client.sources.source_data(source.id)
     assert data.total_rows == 1
     assert data.data[0].get("new") == "data"
     assert "old" not in data.data[0] or data.data[0].get("old") is None
@@ -540,15 +547,15 @@ def cleanup():
     client = rw_client()
     for sid in _created_source_ids:
         try:
-            client.data.delete_source(sid)
+            client.sources.delete(sid)
         except Exception:
             pass
     # Also clean up by name pattern
     try:
-        for s in client.data.sources():
+        for s in _sources(client, limit=100):
             if s.name.startswith("e2e_test_") or s.name.startswith("airbyte_e2e_"):
                 try:
-                    client.data.delete_source(s.id)
+                    client.sources.delete(s.id)
                 except Exception:
                     pass
     except Exception:

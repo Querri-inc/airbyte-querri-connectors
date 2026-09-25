@@ -6,6 +6,7 @@ from typing import Any, List, Mapping, Optional, Tuple
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from querri import Querri
+from querri.types.data import Source
 from querri._exceptions import (
     AuthenticationError,
     ConfigError,
@@ -48,7 +49,7 @@ class SourceQuerri(AbstractSource):
         try:
             client = self._make_client(config)
             # Force iteration to trigger the HTTP call (SyncCursorPage is lazy)
-            next(iter(client.data.sources(limit=1)), None)
+            next(iter(client.sources.list(limit=1)), None)
             return True, None
         except Exception as e:
             return False, _format_error(e)
@@ -61,8 +62,10 @@ class SourceQuerri(AbstractSource):
         """
         client = self._make_client(config)
 
-        # Auto-paginating: iterates all pages
-        all_sources = list(client.data.sources())
+        # Auto-paginating: iterates all pages. The SDK returns plain dicts.
+        all_sources = [
+            Source.model_validate(s) for s in client.sources.list(limit=100)
+        ]
 
         # Optionally filter to specific source IDs
         filter_ids = config.get("source_ids", [])
@@ -73,7 +76,7 @@ class SourceQuerri(AbstractSource):
         for source in all_sources:
             # Fetch full schema for each source (includes column_types)
             try:
-                schema = client.data.source(source.id)
+                schema = Source.model_validate(client.sources.get(source.id))
             except Exception as e:
                 logger.warning(
                     f"Skipping source {source.id}: failed to get schema: {e}"

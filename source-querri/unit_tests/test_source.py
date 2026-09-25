@@ -27,16 +27,16 @@ from source_querri.streams import (
 def _mock_client(**overrides):
     """Create a MagicMock Querri SDK client with sensible defaults."""
     client = MagicMock()
-    client.data.sources.return_value = []
-    client.data.source.return_value = Source(
+    client.sources.list.return_value = []
+    client.sources.get.return_value = Source(
         id="src-1", name="Test", columns=["col"], row_count=0
     )
-    client.data.source_data.return_value = DataPage(data=[], total_rows=0)
+    client.sources.source_data.return_value = DataPage(data=[], total_rows=0)
     for k, v in overrides.items():
-        attr = getattr(client.data, k, None)
+        attr = getattr(client.sources, k, None)
         if attr is not None:
             if callable(v) and not isinstance(v, MagicMock):
-                setattr(client.data, k, v)
+                setattr(client.sources, k, v)
             else:
                 attr.return_value = v
     return client
@@ -113,13 +113,13 @@ class TestSourceConnectionCheck:
 
         assert ok is True
         assert err is None
-        client.data.sources.assert_called_once_with(limit=1)
+        client.sources.list.assert_called_once_with(limit=1)
 
     def test_check_auth_failure(self):
         source = SourceQuerri()
         config = {"api_key": "qk_bad", "org_id": "org-1"}
         client = _mock_client()
-        client.data.sources.side_effect = AuthenticationError(
+        client.sources.list.side_effect = AuthenticationError(
             "Invalid API key", status=401
         )
 
@@ -133,7 +133,7 @@ class TestSourceConnectionCheck:
         source = SourceQuerri()
         config = {"api_key": "qk_test", "org_id": "org-1"}
         client = _mock_client()
-        client.data.sources.side_effect = ServerError(
+        client.sources.list.side_effect = ServerError(
             "Internal error", status=500
         )
 
@@ -168,8 +168,8 @@ class TestStreamDiscovery:
         )
 
         client = _mock_client()
-        client.data.sources.return_value = mock_sources
-        client.data.source.side_effect = [schema_1, schema_2]
+        client.sources.list.return_value = mock_sources
+        client.sources.get.side_effect = [schema_1, schema_2]
 
         with patch.object(SourceQuerri, "_make_client", return_value=client):
             streams = source.streams(config)
@@ -182,7 +182,7 @@ class TestStreamDiscovery:
         source = SourceQuerri()
         config = {"api_key": "qk_test", "org_id": "org-1"}
         client = _mock_client()
-        client.data.sources.return_value = []
+        client.sources.list.return_value = []
 
         with patch.object(SourceQuerri, "_make_client", return_value=client):
             streams = source.streams(config)
@@ -203,8 +203,8 @@ class TestStreamDiscovery:
         )
 
         client = _mock_client()
-        client.data.sources.return_value = mock_sources
-        client.data.source.return_value = schema
+        client.sources.list.return_value = mock_sources
+        client.sources.get.return_value = schema
 
         with patch.object(SourceQuerri, "_make_client", return_value=client):
             streams = source.streams(config)
@@ -212,7 +212,7 @@ class TestStreamDiscovery:
         assert len(streams) == 1
         assert streams[0].name == "contacts"
         # get_source should only be called once (for the filtered source)
-        client.data.source.assert_called_once_with("src-1")
+        client.sources.get.assert_called_once_with("src-1")
 
     def test_filter_with_nonexistent_ids(self):
         """Filter with IDs that don't exist in list_sources — should return empty."""
@@ -221,7 +221,7 @@ class TestStreamDiscovery:
                   "source_ids": ["src-nonexistent"]}
 
         client = _mock_client()
-        client.data.sources.return_value = [
+        client.sources.list.return_value = [
             _source(id="src-1", name="Contacts"),
         ]
 
@@ -229,7 +229,7 @@ class TestStreamDiscovery:
             streams = source.streams(config)
 
         assert streams == []
-        client.data.source.assert_not_called()
+        client.sources.get.assert_not_called()
 
     def test_partial_discovery_skips_failed_schemas(self):
         """If get_source fails for one source, others are still discovered."""
@@ -251,8 +251,8 @@ class TestStreamDiscovery:
         )
 
         client = _mock_client()
-        client.data.sources.return_value = mock_sources
-        client.data.source.side_effect = [
+        client.sources.list.return_value = mock_sources
+        client.sources.get.side_effect = [
             schema_1,
             NotFoundError("Not found", status=404),
             schema_3,
@@ -271,10 +271,10 @@ class TestStreamDiscovery:
         config = {"api_key": "qk_test", "org_id": "org-1"}
 
         client = _mock_client()
-        client.data.sources.return_value = [
+        client.sources.list.return_value = [
             _source(id="src-1", name="NoTypes"),
         ]
-        client.data.source.return_value = _source(
+        client.sources.get.return_value = _source(
             id="src-1", name="NoTypes", columns=["a", "b"],
             column_types=None, row_count=5,
         )
@@ -305,8 +305,8 @@ class TestPagination:
         ]
 
         client = _mock_client()
-        client.data.sources.return_value = sources
-        client.data.source.side_effect = schemas
+        client.sources.list.return_value = sources
+        client.sources.get.side_effect = schemas
 
         with patch.object(SourceQuerri, "_make_client", return_value=client):
             streams = source.streams(config)
@@ -319,13 +319,13 @@ class TestPagination:
         config = {"api_key": "qk_test", "org_id": "org-1"}
 
         client = _mock_client()
-        client.data.sources.return_value = []
+        client.sources.list.return_value = []
 
         with patch.object(SourceQuerri, "_make_client", return_value=client):
             source.streams(config)
 
         # Connector calls sources() with no limit arg to get all pages
-        client.data.sources.assert_called_once_with()
+        client.sources.list.assert_called_once_with(limit=100)
 
 
 # ── Stream Schema ──
@@ -400,7 +400,7 @@ class TestStreamSchema:
 class TestStreamReading:
     def test_reads_all_pages(self):
         client = _mock_client()
-        client.data.source_data.side_effect = [
+        client.sources.source_data.side_effect = [
             DataPage(
                 data=[{"name": f"row-{i}"} for i in range(10)],
                 total_rows=15, page=1, page_size=10,
@@ -410,7 +410,7 @@ class TestStreamReading:
                 total_rows=15, page=2, page_size=10,
             ),
         ]
-        client.data.source.return_value = _source(updated_at="2026-03-08T00:00:00")
+        client.sources.get.return_value = _source(updated_at="2026-03-08T00:00:00")
 
         stream = _stream(
             client=client, columns=["name"], column_types={"name": "string"},
@@ -424,10 +424,10 @@ class TestStreamReading:
 
     def test_reads_empty_source(self):
         client = _mock_client()
-        client.data.source_data.return_value = DataPage(
+        client.sources.source_data.return_value = DataPage(
             data=[], total_rows=0, page=1, page_size=PAGE_SIZE,
         )
-        client.data.source.return_value = _source(updated_at=None)
+        client.sources.get.return_value = _source(updated_at=None)
 
         stream = _stream(client=client, row_count=0)
         records = list(stream.read_records(sync_mode="full_refresh"))
@@ -435,10 +435,10 @@ class TestStreamReading:
 
     def test_reads_partial_last_page(self):
         client = _mock_client()
-        client.data.source_data.side_effect = [
+        client.sources.source_data.side_effect = [
             DataPage(data=[{"v": i} for i in range(3)], total_rows=3, page=1, page_size=PAGE_SIZE),
         ]
-        client.data.source.return_value = _source(updated_at="2026-01-01T00:00:00")
+        client.sources.get.return_value = _source(updated_at="2026-01-01T00:00:00")
 
         stream = _stream(client=client, columns=["v"], row_count=3)
         records = list(stream.read_records(sync_mode="full_refresh"))
@@ -447,11 +447,11 @@ class TestStreamReading:
     def test_error_mid_pagination_stops_gracefully(self):
         """If a page fetch fails, reading stops but doesn't crash."""
         client = _mock_client()
-        client.data.source_data.side_effect = [
+        client.sources.source_data.side_effect = [
             DataPage(data=[{"v": i} for i in range(10)], total_rows=20, page=1, page_size=10),
             ServerError("Connection reset", status=502),
         ]
-        client.data.source.return_value = _source(updated_at="2026-01-01T00:00:00")
+        client.sources.get.return_value = _source(updated_at="2026-01-01T00:00:00")
 
         stream = _stream(client=client, columns=["v"], row_count=20)
         records = list(stream.read_records(sync_mode="full_refresh"))
@@ -460,10 +460,10 @@ class TestStreamReading:
 
     def test_enriches_with_metadata(self):
         client = _mock_client()
-        client.data.source_data.return_value = DataPage(
+        client.sources.source_data.return_value = DataPage(
             data=[{"col": "val"}], total_rows=1, page=1, page_size=PAGE_SIZE,
         )
-        client.data.source.return_value = _source(updated_at="2026-01-01T00:00:00")
+        client.sources.get.return_value = _source(updated_at="2026-01-01T00:00:00")
 
         stream = _stream(
             client=client, source_id="src-42", source_name="My Source",
@@ -480,7 +480,7 @@ class TestStreamReading:
 class TestIncrementalSync:
     def test_skips_unchanged_source(self):
         client = _mock_client()
-        client.data.source.return_value = _source(updated_at="2026-01-01T00:00:00")
+        client.sources.get.return_value = _source(updated_at="2026-01-01T00:00:00")
 
         stream = _stream(client=client)
         stream.state = {"updated_at": "2026-06-01T00:00:00"}
@@ -490,15 +490,15 @@ class TestIncrementalSync:
             stream_state={"updated_at": "2026-06-01T00:00:00"},
         ))
         assert len(records) == 0
-        client.data.source_data.assert_not_called()
+        client.sources.source_data.assert_not_called()
 
     def test_reads_when_source_updated(self):
         """Source updated_at is newer than cursor — should read data."""
         client = _mock_client()
         # First call: incremental check returns newer timestamp
         # Second call: after reading, update cursor
-        client.data.source.return_value = _source(updated_at="2026-07-01T00:00:00")
-        client.data.source_data.return_value = DataPage(
+        client.sources.get.return_value = _source(updated_at="2026-07-01T00:00:00")
+        client.sources.source_data.return_value = DataPage(
             data=[{"v": 1}], total_rows=1, page=1, page_size=PAGE_SIZE,
         )
 
@@ -514,7 +514,7 @@ class TestIncrementalSync:
     def test_equal_timestamps_skip(self):
         """Equal updated_at means no change — skip (uses <=)."""
         client = _mock_client()
-        client.data.source.return_value = _source(updated_at="2026-06-01T00:00:00")
+        client.sources.get.return_value = _source(updated_at="2026-06-01T00:00:00")
 
         stream = _stream(client=client)
         stream.state = {"updated_at": "2026-06-01T00:00:00"}
@@ -528,10 +528,10 @@ class TestIncrementalSync:
     def test_no_cursor_value_does_full_read(self):
         """If no previous cursor, should do a full read even in incremental mode."""
         client = _mock_client()
-        client.data.source_data.return_value = DataPage(
+        client.sources.source_data.return_value = DataPage(
             data=[{"v": 1}], total_rows=1, page=1, page_size=PAGE_SIZE,
         )
-        client.data.source.return_value = _source(updated_at="2026-01-01T00:00:00")
+        client.sources.get.return_value = _source(updated_at="2026-01-01T00:00:00")
 
         stream = _stream(client=client, columns=["v"], row_count=1)
         # No state set — cursor_value is None
@@ -545,10 +545,10 @@ class TestIncrementalSync:
     def test_cursor_updated_after_read(self):
         """After reading, the cursor should be updated to the latest updated_at."""
         client = _mock_client()
-        client.data.source_data.return_value = DataPage(
+        client.sources.source_data.return_value = DataPage(
             data=[{"v": 1}], total_rows=1, page=1, page_size=PAGE_SIZE,
         )
-        client.data.source.return_value = _source(updated_at="2026-07-15T12:00:00")
+        client.sources.get.return_value = _source(updated_at="2026-07-15T12:00:00")
 
         stream = _stream(client=client, columns=["v"], row_count=1)
 
@@ -558,11 +558,11 @@ class TestIncrementalSync:
     def test_cursor_fallback_on_fetch_failure(self):
         """If _get_current_updated_at fails, falls back to cached value."""
         client = _mock_client()
-        client.data.source_data.return_value = DataPage(
+        client.sources.source_data.return_value = DataPage(
             data=[{"v": 1}], total_rows=1, page=1, page_size=PAGE_SIZE,
         )
         # First call succeeds (incremental check), second fails (cursor update)
-        client.data.source.side_effect = [
+        client.sources.get.side_effect = [
             ServerError("Timeout", status=503),
         ]
 
@@ -602,7 +602,7 @@ class TestErrorHandling:
         source = SourceQuerri()
         config = {"api_key": "qk_test", "org_id": "org-1"}
         client = _mock_client()
-        client.data.sources.side_effect = AuthenticationError(
+        client.sources.list.side_effect = AuthenticationError(
             "Invalid API key", status=401
         )
 
@@ -614,7 +614,7 @@ class TestErrorHandling:
         source = SourceQuerri()
         config = {"api_key": "qk_test", "org_id": "org-1"}
         client = _mock_client()
-        client.data.sources.side_effect = RateLimitError(
+        client.sources.list.side_effect = RateLimitError(
             "Rate limited", status=429, retry_after=30.0
         )
 
@@ -626,10 +626,10 @@ class TestErrorHandling:
     def test_not_found_during_read(self):
         """404 during source_data read stops gracefully."""
         client = _mock_client()
-        client.data.source_data.side_effect = NotFoundError(
+        client.sources.source_data.side_effect = NotFoundError(
             "Source not found", status=404
         )
-        client.data.source.return_value = _source(updated_at=None)
+        client.sources.get.return_value = _source(updated_at=None)
 
         stream = _stream(client=client, row_count=10)
         records = list(stream.read_records(sync_mode="full_refresh"))
