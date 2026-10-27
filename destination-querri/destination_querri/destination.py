@@ -7,13 +7,18 @@ Sync modes:
 Deduplicated modes are not offered: the Querri API has no upsert endpoint.
 
 Each stream is written to the source named ``<prefix><stream>``, created on the
-first write when it does not exist yet.
+first write when it does not exist yet. An existing source with that name is
+written to only if it is an API source (see ``_resolve_sources``).
 
 State semantics (the Airbyte destination contract: a STATE is emitted only after
 every record received before it is durably written):
 
-- append: on a STATE, every append buffer is flushed and the server has answered
-  success before the STATE is yielded.
+- append: a STATE is held until every append buffer is flushed and the server
+  has answered success. A STATE triggers that flush only when STATE_FLUSH_ROWS
+  rows are buffered or STATE_FLUSH_SECONDS have passed (or nothing is
+  buffered); otherwise it waits for a later one, or the end. Held states leave in
+  arrival order, so a source that checkpoints every few records does not turn
+  into one write request per checkpoint.
 - overwrite: the source keeps its old rows until the sync's final replace, so
   nothing before that replace is durable. Every STATE that covers an overwrite
   stream (its own per-stream STATE, or any GLOBAL/LEGACY STATE when the catalog
@@ -50,14 +55,14 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from querri import Querri
-from querri._exceptions import (
+from querri import (
     APIError,
     AuthenticationError,
     ConfigError,
     ConflictError,
     NotFoundError,
     PermissionError as QuerriPermissionError,
+    Querri,
     RateLimitError,
 )
 
@@ -74,9 +79,27 @@ MAX_REQUEST_BYTES = 40 * 1024 * 1024
 # Hosts allowed over plain http, for local testing only.
 LOCAL_HTTP_HOSTS = {"localhost", "127.0.0.1", "host.docker.internal"}
 
-# Retry policy. 409 (the source is being synced or written) and 429 mean the
-# server did not apply the request, so any request may be resent. A 5xx or a
-# timeout may have been applied: only an idempotent GET or PUT is resent.
+# The server's limit on a source name (CreateDataSourceRequest.name).
+MAX_SOURCE_NAME = 200
+
+# A STATE flushes the append buffers (and is then emitted) only once this many
+# rows are buffered or this long has passed since the last flush; until then it
+# is held. A STATE arriving with nothing buffered is emitted at once. Either way
+# a STATE leaves only after every record before it is written.
+STATE_FLUSH_ROWS = 10_000
+STATE_FLUSH_SECONDS = 30.0
+
+# A source this destination may write to: one created through the API's rows
+# endpoints, as the destination creates them. An upload, a View or a connector's
+# source that shares the name is never written to. (A stronger marker, the
+# source's notes, needs admin:sources:write to set, which a data:write key lacks.)
+WRITABLE_SERVICE = "api"
+
+# Retry policy. 429 and the two transient 409s (the source is being synced or
+# written) mean the server did not apply the request, so any request may be
+# resent. Any other 409 (e.g. managed_by_sites) is permanent. A 5xx or a timeout
+# may have been applied: only an idempotent GET, PUT or PATCH is resent.
+TRANSIENT_CONFLICT_CODES = {"write_in_progress", "sync_in_progress"}
 MAX_ATTEMPTS = 8
 CONFLICT_RETRY_SECONDS = 10.0
 MAX_BACKOFF_SECONDS = 30.0
@@ -120,7 +143,9 @@ def _row_bytes(record: Mapping[str, Any]) -> int:
 
 
 def _is_retryable(e: Exception, idempotent: bool) -> bool:
-    if isinstance(e, (ConflictError, RateLimitError)):
+    if isinstance(e, ConflictError):
+        return e.code in TRANSIENT_CONFLICT_CODES
+    if isinstance(e, RateLimitError):
         return True
     if not isinstance(e, APIError):
         return False
@@ -180,6 +205,10 @@ class _Writer:
             f"Replace {source_id}", True,
             lambda: self.client.sources.replace_data(source_id, rows=rows))
         logger.info(f"Replaced {source_id} with {len(rows)} rows → {result.row_count} total")
+
+
+def _is_writable(source: Mapping[str, Any]) -> bool:
+    return source.get("service") == WRITABLE_SERVICE and not source.get("connector_id")
 
 
 def _chunks(rows: Iterable[Tuple[Dict[str, Any], int]], max_rows: int) -> Iterator[List[Dict[str, Any]]]:
@@ -260,10 +289,9 @@ class _OverwriteWriter:
     replaces the whole table again.
     """
 
-    def __init__(self, cfg: _StreamConfig, writer: _Writer, batch_size: int):
+    def __init__(self, cfg: _StreamConfig, writer: _Writer):
         self.cfg = cfg
         self.writer = writer
-        self.batch_size = batch_size
         self.count = 0
         self.bytes = 0
         self._spool = tempfile.TemporaryFile(mode="w+", encoding="utf-8")
@@ -300,8 +328,9 @@ class _OverwriteWriter:
                 f"than one request holds ({MAX_BATCH_SIZE} rows / {MAX_REQUEST_BYTES} bytes). "
                 "Replacing in several requests: readers see a partial table until the last one lands."
             )
-        max_rows = MAX_BATCH_SIZE if single else self.batch_size
-        for i, chunk in enumerate(_chunks(self._read_back(), max_rows)):
+        # The server's max per chunk, not batch_size: fewer requests mean a shorter
+        # partial window and fewer view-refresh cascades.
+        for i, chunk in enumerate(_chunks(self._read_back(), MAX_BATCH_SIZE)):
             if i > 0:
                 self.writer.append(cfg.querri_source_id, chunk)
             elif cfg.querri_source_id is None:
@@ -326,14 +355,20 @@ def _state_key(message: AirbyteMessage) -> Tuple[str, ...]:
 class DestinationQuerri(Destination):
     """Writes Airbyte records to Querri data sources."""
 
-    # Indirection so tests can skip retry waits.
+    # Indirections so tests can skip retry waits and control the flush clock.
     _sleep = staticmethod(time.sleep)
+    _now = staticmethod(time.monotonic)
 
     def check(
         self, logger: logging.Logger, config: Mapping[str, Any]
     ) -> AirbyteConnectionStatus:
         """Verify the credentials can list sources and hold the data:write scope."""
         try:
+            prefix = config.get("source_name_prefix", "airbyte_")
+            if len(prefix) >= MAX_SOURCE_NAME:
+                raise ConfigError(
+                    f"source_name_prefix is {len(prefix)} characters; with the stream name it "
+                    f"must stay under Querri's {MAX_SOURCE_NAME}-character source name limit.")
             client = self._make_client(config)
             # Force iteration to trigger the HTTP call (SyncCursorPage is lazy)
             next(iter(client.sources.list(limit=1)), None)
@@ -398,9 +433,17 @@ class DestinationQuerri(Destination):
                     "both would write the same Querri source.",
                     failure_type=FailureType.config_error,
                 )
+            source_name = f"{prefix}{stream_name}"
+            if len(source_name) > MAX_SOURCE_NAME:
+                raise AirbyteTracedException(
+                    message=f"Stream '{stream_name}' would be written to a source named "
+                    f"'{source_name[:40]}...' ({len(source_name)} characters); Querri allows "
+                    f"{MAX_SOURCE_NAME}. Shorten the prefix or rename the stream.",
+                    failure_type=FailureType.config_error,
+                )
             stream_configs[stream_name] = _StreamConfig(
                 stream_name=stream_name,
-                querri_source_name=f"{prefix}{stream_name}",
+                querri_source_name=source_name,
                 sync_mode=sync_mode,
             )
 
@@ -410,12 +453,20 @@ class DestinationQuerri(Destination):
         overwriters: Dict[str, _OverwriteWriter] = {}
         for name, cfg in stream_configs.items():
             if cfg.is_overwrite:
-                overwriters[name] = _OverwriteWriter(cfg, writer, batch_size)
+                overwriters[name] = _OverwriteWriter(cfg, writer)
             else:
                 appenders[name] = _AppendWriter(cfg, writer, batch_size)
 
         # States held until every overwrite stream is replaced; latest per key.
         deferred: "OrderedDict[Tuple[str, ...], AirbyteMessage]" = OrderedDict()
+        # States waiting for the next append flush, in arrival order.
+        pending: List[AirbyteMessage] = []
+        last_flush = self._now()
+        warned_global = False
+
+        def flush_appends() -> None:
+            for appender in appenders.values():
+                appender.flush()
 
         try:
             for message in input_messages:
@@ -428,17 +479,30 @@ class DestinationQuerri(Destination):
                     target.add(message.record.data)
 
                 elif message.type == Type.STATE:
-                    for appender in appenders.values():
-                        appender.flush()
                     if self._covers_overwrite(message, overwriters):
+                        if message.state.type != AirbyteStateType.STREAM and not warned_global:
+                            warned_global = True
+                            logger.warning(
+                                "The source sends GLOBAL state and the catalog has an Overwrite "
+                                "stream, so no checkpoint is acknowledged until every overwrite "
+                                "is written at the end of the sync. A failed sync restarts from "
+                                "its beginning.")
                         key = _state_key(message)
                         deferred.pop(key, None)
                         deferred[key] = message
-                    else:
-                        yield message
+                        continue
+                    pending.append(message)
+                    buffered = sum(len(a.rows) for a in appenders.values())
+                    if (buffered == 0 or buffered >= STATE_FLUSH_ROWS
+                            or self._now() - last_flush >= STATE_FLUSH_SECONDS):
+                        flush_appends()
+                        last_flush = self._now()
+                        yield from pending
+                        pending.clear()
 
-            for appender in appenders.values():
-                appender.flush()
+            flush_appends()
+            yield from pending
+            pending.clear()
             for overwriter in overwriters.values():
                 overwriter.finalize()
         finally:
@@ -461,10 +525,14 @@ class DestinationQuerri(Destination):
 
     @staticmethod
     def _resolve_sources(writer: _Writer, stream_configs: Dict[str, _StreamConfig]) -> None:
-        """Map each stream to an existing Querri source by name, or mark for creation.
+        """Map each stream to the existing API source with its name, or mark it
+        for creation.
 
-        A failed listing fails the sync: treating it as "no sources" would create
-        a second source with the same name.
+        Only an API source (service "api", no connector) is written to; any other
+        source with the name, an upload, a View or a connector's table, refuses
+        the sync rather than being overwritten, and so do two API sources with
+        the name. A failed listing fails the sync: treating it as "no sources"
+        would create a second source with the name.
         """
         wanted = {cfg.querri_source_name for cfg in stream_configs.values()}
         by_name: Dict[str, List[Dict[str, Any]]] = {}
@@ -479,12 +547,22 @@ class DestinationQuerri(Destination):
                     f"Stream '{cfg.stream_name}' → will create source '{cfg.querri_source_name}'"
                 )
                 continue
-            existing = matches[0]
-            if len(matches) > 1:
-                logger.warning(
-                    f"{len(matches)} sources are named '{cfg.querri_source_name}'; writing to the "
-                    f"most recently updated ({existing['id']})."
+            others = [s for s in matches if not _is_writable(s)]
+            if others:
+                kind = others[0].get("service") or "connector"
+                raise AirbyteTracedException(
+                    message=f"A Querri source named '{cfg.querri_source_name}' already exists "
+                    f"({others[0]['id']}, a {kind} source) that this destination did not create, "
+                    "so it is not written to. Rename that source or change the Source Name Prefix.",
+                    failure_type=FailureType.config_error,
                 )
+            if len(matches) > 1:
+                raise AirbyteTracedException(
+                    message=f"{len(matches)} Querri sources are named '{cfg.querri_source_name}' "
+                    f"({', '.join(s['id'] for s in matches)}). Delete or rename all but one.",
+                    failure_type=FailureType.config_error,
+                )
+            existing = matches[0]
             cfg.querri_source_id = existing["id"]
             cfg.materialized = existing.get("materialized", True) is not False
             logger.info(

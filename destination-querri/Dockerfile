@@ -6,9 +6,14 @@
 FROM docker.io/airbyte/python-connector-base:4.1.0@sha256:1d1aa21d34e851df4e8a87b391c27724c06e2597608e7161f4d167be853bd7b6
 
 WORKDIR /airbyte/integration_code
-COPY pyproject.toml main.py ./
+# Dependencies exactly as poetry.lock pins them, every file checked by hash.
+# requirements.txt is generated from the lock (see its header); CI fails if it drifts.
+COPY requirements.txt ./
+RUN pip install --no-cache-dir --require-hashes -r requirements.txt && rm -rf /pip_cache/*
+# The connector itself is not pip-installed: main.py imports destination_querri
+# from its own directory, so no unhashed build backend is downloaded.
+COPY main.py ./
 COPY destination_querri ./destination_querri
-RUN pip install --no-cache-dir . && rm -rf /pip_cache/*
 
 # Unbuffered stdout: a STATE must reach the platform when it is emitted.
 ENV PYTHONUNBUFFERED=1

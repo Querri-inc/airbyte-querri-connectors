@@ -36,7 +36,7 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from querri._exceptions import (
+from querri import (
     APIError,
     AuthenticationError,
     ConflictError,
@@ -65,9 +65,15 @@ class FakeSources:
         self.api._maybe_fail("list")
         # The server sorts newest first.
         return [
-            {"id": sid, "name": t["name"], "materialized": t["rows"] is not None}
+            {"id": sid, "name": t["name"], "materialized": t["rows"] is not None,
+             "service": t["service"], "connector_id": t["connector_id"]}
             for sid, t in sorted(self.api.tables.items(), key=lambda kv: -kv[1]["updated"])
         ]
+
+    def update(self, source_id: str, **fields):
+        # PATCH needs admin:sources:write, which a data:write key lacks.
+        raise QuerriPermissionError("requires admin:sources:write", status=403,
+                                    code="insufficient_scope")
 
     @staticmethod
     def _check_rows(rows):
@@ -132,10 +138,13 @@ class FakeQuerri:
             raise NotFoundError(f"Source {source_id} not found.", status=404)
         return self.tables[source_id]
 
-    def seed(self, name: str, rows, materialized: bool = True) -> str:
+    def seed(self, name: str, rows, materialized: bool = True,
+             service: str = "api", connector_id=None) -> str:
+        """A source as the server holds it; the rows endpoints create service "api"."""
         sid = f"src-{len(self.tables) + 1}"
         self.tables[sid] = {"name": name, "rows": list(rows) if materialized else None,
-                            "updated": self._tick()}
+                            "updated": self._tick(), "service": service,
+                            "connector_id": connector_id}
         return sid
 
     def rows_of(self, name: str):
@@ -145,6 +154,14 @@ class FakeQuerri:
 
     def writes(self):
         return [c for c in self.calls if c[0] in ("create", "replace", "append")]
+
+
+class FakeClock:
+    def __init__(self):
+        self.now = 1000.0
+
+    def __call__(self):
+        return self.now
 
 
 # ── Message helpers ──
@@ -199,10 +216,21 @@ CONFIG = {"api_key": "qk_test", "org_id": "org_1", "base_url": "http://localhost
 
 
 @pytest.fixture
-def fake(monkeypatch):
+def clock(monkeypatch):
+    c = FakeClock()
+    monkeypatch.setattr(DestinationQuerri, "_now", staticmethod(c))
+    return c
+
+
+@pytest.fixture
+def fake(monkeypatch, clock):
+    """The fake server. Unless a test says otherwise, every STATE flushes
+    (STATE_FLUSH_ROWS=1), so the ordering tests see each state's own flush;
+    TestStateCoalescing covers the real thresholds."""
     api = FakeQuerri()
     monkeypatch.setattr(DestinationQuerri, "_make_client", staticmethod(lambda config: api))
     monkeypatch.setattr(DestinationQuerri, "_sleep", staticmethod(lambda s: None))
+    monkeypatch.setattr(dest_module, "STATE_FLUSH_ROWS", 1)
     return api
 
 
@@ -216,6 +244,9 @@ def drive(api: FakeQuerri, catalog, messages, config=None):
 
     def feed():
         for m in messages:
+            if callable(m):
+                m()
+                continue
             if m.type == Type.RECORD:
                 sent.setdefault(m.record.stream, []).append(m.record.data)
             yield m
@@ -353,7 +384,8 @@ class TestAppendState:
 
     def test_conflict_is_retried(self, fake):
         fake.seed("airbyte_users", [{"id": -1}])
-        fake.faults["append"] = [ConflictError("sync_in_progress", status=409)] * 2
+        fake.faults["append"] = [ConflictError("busy", status=409, code="sync_in_progress"),
+                                 ConflictError("busy", status=409, code="write_in_progress")]
         states, _, error = drive(fake, _catalog({"users": DestinationSyncMode.append}),
                                  _rows("users", 0, 2) + [_stream_state("users", 1)])
         assert error is None and len(states) == 1
@@ -448,8 +480,10 @@ class TestOverwriteState:
     def test_over_cap_is_replace_then_appends(self, fake, monkeypatch):
         monkeypatch.setattr(dest_module, "MAX_BATCH_SIZE", 10)
         sid = fake.seed("airbyte_items", [{"old": True}])
+        # Chunks are the server's max, not batch_size: fewer requests, a shorter
+        # partial window, fewer view-refresh cascades.
         _, _, error = drive(fake, _catalog({"items": DestinationSyncMode.overwrite}),
-                            _rows("items", 0, 25), config={**CONFIG, "batch_size": 10})
+                            _rows("items", 0, 25), config={**CONFIG, "batch_size": 3})
         assert error is None
         assert fake.writes() == [("replace", sid, 10), ("append", sid, 10), ("append", sid, 5)]
         assert fake.rows_of("airbyte_items") == [{"id": i} for i in range(25)]
@@ -469,7 +503,7 @@ class TestOverwriteState:
     def test_rows_are_spooled_not_held(self, fake):
         writer = dest_module._OverwriteWriter(
             dest_module._StreamConfig("s", "airbyte_s", DestinationSyncMode.overwrite),
-            dest_module._Writer(fake), 10)
+            dest_module._Writer(fake))
         for i in range(100):
             writer.add({"id": i})
         assert writer.count == 100
@@ -550,12 +584,12 @@ class TestResolution:
         assert error is None
         assert fake.rows_of("airbyte_users") == [{"id": -1}, {"id": 0}]
 
-    def test_duplicate_names_write_most_recent(self, fake):
+    def test_two_sources_with_the_name_refused(self, fake):
         fake.seed("airbyte_users", [{"id": "older"}])
-        newer = fake.seed("airbyte_users", [{"id": "newer"}])
+        fake.seed("airbyte_users", [{"id": "newer"}])
         _, _, error = drive(fake, _catalog({"users": DestinationSyncMode.overwrite}), _rows("users", 0, 1))
-        assert error is None
-        assert fake.tables[newer]["rows"] == [{"id": 0}]
+        assert isinstance(error, AirbyteTracedException)
+        assert fake.writes() == []
 
     def test_custom_prefix(self, fake):
         drive(fake, _catalog({"users": DestinationSyncMode.append}), _rows("users", 0, 1),
@@ -612,3 +646,128 @@ class TestRetryDelay:
         from querri._exceptions import RateLimitError
         e = RateLimitError("slow down", status=429, retry_after=60.0)
         assert dest_module._retry_delay(e, 0) == 60.0
+
+
+class TestOwnership:
+    """Only an API source (as the destination creates them) is ever written to."""
+
+    def test_next_sync_reuses_the_created_source(self, fake):
+        catalog = _catalog({"users": DestinationSyncMode.append})
+        drive(fake, catalog, _rows("users", 0, 2))
+        _, _, error = drive(fake, catalog, _rows("users", 2, 2))
+        assert error is None
+        assert fake.rows_of("airbyte_users") == [{"id": i} for i in range(4)]
+
+    @pytest.mark.parametrize("kind", [
+        dict(service="upload"),
+        dict(service="view"),
+        dict(service="file"),
+        dict(service="postgres", connector_id="conn-1"),
+        # an API service name with a connector behind it is still a connector's
+        dict(service="api", connector_id="conn-1"),
+    ])
+    def test_same_name_source_of_another_kind_is_refused(self, fake, kind):
+        sid = fake.seed("airbyte_users", [{"theirs": True}], **kind)
+        _, _, error = drive(fake, _catalog({"users": DestinationSyncMode.overwrite}), _rows("users", 0, 1))
+        assert isinstance(error, AirbyteTracedException)
+        assert error.failure_type.value == "config_error"
+        assert "airbyte_users" in error.message
+        assert fake.writes() == []
+        assert fake.tables[sid]["rows"] == [{"theirs": True}]
+
+    def test_api_source_beside_another_kind_is_still_refused(self, fake):
+        fake.seed("airbyte_users", [{"theirs": True}], service="upload")
+        ours = fake.seed("airbyte_users", [{"old": True}])
+        _, _, error = drive(fake, _catalog({"users": DestinationSyncMode.overwrite}), _rows("users", 0, 1))
+        assert isinstance(error, AirbyteTracedException)
+        assert fake.tables[ours]["rows"] == [{"old": True}]
+
+
+class TestStateCoalescing:
+    """A STATE flushes only when enough rows are buffered or enough time passed."""
+
+    @pytest.fixture(autouse=True)
+    def real_thresholds(self, monkeypatch, fake):  # after fake, which sets 1
+        monkeypatch.setattr(dest_module, "STATE_FLUSH_ROWS", 10_000)
+        monkeypatch.setattr(dest_module, "STATE_FLUSH_SECONDS", 30.0)
+
+    def test_small_states_are_held_and_emitted_in_order_at_end(self, fake):
+        msgs = []
+        for k in range(3):
+            msgs += _rows("users", k * 10, 10) + [_stream_state("users", k + 1)]
+        states, checkpoints, error = drive(fake, _catalog({"users": DestinationSyncMode.append}), msgs)
+        assert error is None
+        assert [_cursor(s) for s in states] == [1, 2, 3]
+        # One write for the whole sync instead of one per state.
+        assert [c[0] for c in fake.writes()] == ["create"]
+        for _, sent, snapshot in checkpoints:
+            assert snapshot["airbyte_users"] == sent["users"]
+
+    def test_elapsed_time_flushes_and_emits_held_states(self, fake, clock):
+        def advance():
+            clock.now += 31
+        msgs = (_rows("users", 0, 5) + [_stream_state("users", 1)]
+                + _rows("users", 5, 5) + [advance, _stream_state("users", 2)]
+                + _rows("users", 10, 5) + [_stream_state("users", 3)])
+        states, checkpoints, error = drive(fake, _catalog({"users": DestinationSyncMode.append}), msgs)
+        assert error is None
+        assert [_cursor(s) for s in states] == [1, 2, 3]
+        # States 1 and 2 come out together at state 2, before records 10-14 are read.
+        assert [len(c[1]["users"]) for c in checkpoints] == [10, 10, 15]
+        for _, sent, snapshot in checkpoints:
+            assert snapshot["airbyte_users"] == sent["users"]
+
+    def test_buffered_rows_flush(self, fake, monkeypatch):
+        monkeypatch.setattr(dest_module, "STATE_FLUSH_ROWS", 8)
+        msgs = (_rows("users", 0, 5) + [_stream_state("users", 1)]
+                + _rows("users", 5, 5) + [_stream_state("users", 2)])
+        states, checkpoints, error = drive(fake, _catalog({"users": DestinationSyncMode.append}), msgs)
+        assert error is None
+        assert [len(c[1]["users"]) for c in checkpoints] == [10, 10]
+        assert [c[2] for c in fake.writes()] == [10]
+
+    def test_state_with_nothing_buffered_passes_straight_through(self, fake):
+        msgs = [_stream_state("users", 1)] + _rows("users", 0, 3) + [_stream_state("users", 2)]
+        states, checkpoints, error = drive(fake, _catalog({"users": DestinationSyncMode.append}), msgs)
+        assert error is None
+        assert [len(c[1].get("users", [])) for c in checkpoints] == [0, 3]
+
+    def test_failed_final_flush_emits_no_held_state(self, fake):
+        fake.faults["create"] = [ValidationError("bad", status=400)]
+        msgs = _rows("users", 0, 5) + [_stream_state("users", 1)]
+        states, _, error = drive(fake, _catalog({"users": DestinationSyncMode.append}), msgs)
+        assert isinstance(error, ValidationError)
+        assert states == []
+
+
+class TestConflictCodes:
+    def test_managed_by_sites_is_not_retried(self, fake):
+        fake.seed("airbyte_users", [{"id": -1}])
+        fake.faults["append"] = [ConflictError("site", status=409, code="managed_by_sites")]
+        _, _, error = drive(fake, _catalog({"users": DestinationSyncMode.append}), _rows("users", 0, 1))
+        assert isinstance(error, ConflictError)
+        assert [c[0] for c in fake.writes()] == ["append"]
+
+
+class TestNameLength:
+    def test_long_stream_name_refused_before_any_write(self, fake):
+        _, _, error = drive(fake, _catalog({"u" * 195: DestinationSyncMode.append}),
+                            _rows("u" * 195, 0, 1))
+        assert isinstance(error, AirbyteTracedException)
+        assert "200" in error.message
+        assert fake.calls == []
+
+    def test_check_refuses_a_prefix_that_leaves_no_room(self, fake):
+        result = DestinationQuerri().check(logging.getLogger(), {**CONFIG, "source_name_prefix": "p" * 200})
+        assert result.status == Status.FAILED
+        assert "200" in result.message
+
+
+class TestGlobalStateWarning:
+    def test_global_state_with_overwrite_warns_once(self, fake, caplog):
+        catalog = _catalog({"events": DestinationSyncMode.append, "items": DestinationSyncMode.overwrite})
+        msgs = _rows("items", 0, 1) + [_global_state(1), _global_state(2)]
+        with caplog.at_level(logging.WARNING, logger="airbyte"):
+            drive(fake, catalog, msgs)
+        warnings = [r for r in caplog.records if "GLOBAL" in r.getMessage()]
+        assert len(warnings) == 1

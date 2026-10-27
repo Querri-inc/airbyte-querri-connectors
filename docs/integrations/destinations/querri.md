@@ -65,10 +65,12 @@ Adds rows to the target source (`POST /sources/{id}/rows`). At most one batch (`
 
 The destination acknowledges an Airbyte state message only once every record received before it has been written and the Querri API answered success:
 
-- **Append**: each state flushes the buffered rows first, then is emitted. If a write fails the sync fails, and Airbyte resumes from the last acknowledged state.
+- **Append**: a state is held until the buffered rows are flushed, and flushing happens when a state arrives with at least 10,000 rows buffered or 30 seconds after the last flush (a state that arrives with nothing buffered is emitted at once). The held states are then emitted in order. A source that sends a state every few records therefore costs one write per 10,000 rows or 30 seconds, not one per state. If a write fails the sync fails, and Airbyte resumes from the last acknowledged state.
 - **Overwrite**: nothing is durable until the final replace, so states covering an overwrite stream are held. After every replace succeeds, the latest held state is emitted. If a replace fails, no state is acknowledged and the source keeps its old rows (for streams that fit in one request).
 
-A sync that fails part-way through an append batch can write that batch again when Airbyte resumes: delivery is at least once. The destination never resends an append that may have been applied (a timeout or a 5xx); it resends only requests the server refused without applying (409 while the source is being synced or written, 429) and connection failures.
+- **GLOBAL state with an Overwrite stream** (sources that send one state for the whole sync, typically CDC): every such state covers the overwrite stream, so none is acknowledged until the overwrite lands at the end. A failure anywhere in that sync restarts it from the beginning, and the append streams' rows from the failed attempt are written again (at least once, across the whole sync). The destination logs a warning when it sees this.
+
+A sync that fails part-way through an append batch can write that batch again when Airbyte resumes: delivery is at least once. The destination never resends an append that may have been applied (a timeout or a 5xx); it resends only requests the server refused without applying (409 `sync_in_progress` / `write_in_progress`, 429) and connection failures.
 
 ## Stream-to-Source Mapping
 
@@ -91,6 +93,12 @@ For example, with the default prefix `airbyte_`:
 If a Querri source does not already exist for a given stream, the connector automatically creates it via `POST /sources`. The new source's schema is inferred from the first batch of records. Subsequent batches are appended to the newly created source.
 
 This means you do not need to pre-create Querri sources before running a sync -- the connector handles it.
+
+### Which existing source is written to
+
+A source with the stream's name is written to only if it is an **API source** (created through the Data API's rows endpoints, as this destination creates them, with no connector). If the name belongs to an upload, a View, a file or a connector's table, the sync fails with a configuration error instead of overwriting it, and so does a name shared by two sources. Rename the other source or change the Source Name Prefix. An API source you created yourself with the same name *is* written to (the API has no marker a `data:write` key can set to tell the two apart), so keep the `airbyte_` prefix unless you mean to target it.
+
+Querri source names are limited to 200 characters; a prefix plus stream name over that fails the sync before anything is written.
 
 A created source is homed in the workspace the API key is bound to. With an unbound key it lands in the **key creator's personal workspace**, invisible to teammates and other keys until shared. Note the prefix applies to every stream: a stream already named `airbyte_x` becomes `airbyte_airbyte_x` with the default prefix.
 
@@ -120,12 +128,16 @@ The destination keeps every request under both limits (it splits by rows and by 
 
 ### Retries
 
-The destination retries 429 (waiting the full `Retry-After`, up to 5 minutes) and 409 (the source is being synced or written, retried every 10 seconds) on every request, and 5xx and timeouts on idempotent requests only (listing sources, replace). It does not resend an append after a timeout or 5xx, because that append may already have been applied.
+The destination retries 429 (waiting the full `Retry-After`, up to 5 minutes) and 409 `sync_in_progress` / `write_in_progress` (the source is being synced or written, retried every 10 seconds) on every request; any other 409, such as a Sites-managed source, fails at once, and 5xx and timeouts on idempotent requests only (listing sources, replace). It does not resend an append after a timeout or 5xx, because that append may already have been applied.
 
 ### Batch Size Tuning
 
 - **Small records**: increase `batch_size` toward 100,000 for fewer append requests.
 - **Memory**: append holds one batch in memory; overwrite holds its rows on local disk, so the container needs free disk roughly equal to the stream's size as JSON.
+
+### Allowed hosts
+
+`metadata.yaml` declares `allowedHosts: app.querri.com, *.querri.com`. Airbyte applies allowed hosts from a connector's registry entry; a custom connector added by image has none, so today the destination connects to whatever `base_url` says (https, or http for local hosts only). If the connector is listed in the Airbyte registry, a Querri on a domain outside `*.querri.com` (a dedicated or self-hosted deployment) must be added to `allowedHosts` in `metadata.yaml`, or Airbyte Cloud will block the connection.
 
 ### Large Organizations
 

@@ -679,7 +679,8 @@ class WriteRun:
 
 
 def _fresh(name, rows=None):
-    """Delete every source called `name`; seed one with `rows` if given."""
+    """Delete every source called `name`; seed one with `rows` if given (an API
+    source, as an earlier sync would have created it)."""
     client = rw_client()
     for s in list(client.sources.list(limit=100)):
         if s["name"] == name:
@@ -747,19 +748,20 @@ def test_write_append_three_checkpoints():
     stream, name = "e2e_w_app3", "airbyte_e2e_w_app3"
     _fresh(name)
     t0 = time.time()
-    run = WriteRun({stream: "append"}, batch_size=1_000)
+    # 10,000 rows per checkpoint: the buffered-rows threshold that makes a STATE flush.
+    run = WriteRun({stream: "append"}, batch_size=50_000)
     seen = []
     for k in range(3):
-        run.send(_rows(stream, k * 2_500, 2_500) + [_msg_state(stream, k + 1)])
+        run.send(_rows(stream, k * 10_000, 10_000) + [_msg_state(stream, k + 1)])
         state = run.next_state()
         assert state is not None, run.errors()
         # Read through the API while the destination is still running.
         seen.append((_state_cursor(state), _stats(name)))
     code, rest = run.finish()
-    TIMINGS.append(("append 7,500 rows / 3 checkpoints", time.time() - t0, run.retries()))
+    TIMINGS.append(("append 30,000 rows / 3 checkpoints", time.time() - t0, run.retries()))
     assert code == 0 and rest == [], (code, rest, run.errors())
-    assert seen == [(1, (2_500, 2_500, 0, 2_499)), (2, (5_000, 5_000, 0, 4_999)),
-                    (3, (7_500, 7_500, 0, 7_499))], seen
+    assert seen == [(1, (10_000, 10_000, 0, 9_999)), (2, (20_000, 20_000, 0, 19_999)),
+                    (3, (30_000, 30_000, 0, 29_999))], seen
 
 
 @test("write: overwrite killed mid-sync acks nothing and keeps old rows; rerun recovers")
@@ -787,23 +789,23 @@ def test_write_overwrite_killed_then_rerun():
 def test_write_append_killed_then_resume():
     stream, name = "e2e_w_appkill", "airbyte_e2e_w_appkill"
     _fresh(name)
-    run = WriteRun({stream: "append"}, batch_size=10_000)
-    run.send(_rows(stream, 0, 1_000) + [_msg_state(stream, 1)])
+    run = WriteRun({stream: "append"}, batch_size=50_000)
+    run.send(_rows(stream, 0, 10_000) + [_msg_state(stream, 1)])
     assert _state_cursor(run.next_state()) == 1
     # Buffered below batch_size, never flushed, never acknowledged.
-    run.send(_rows(stream, 1_000, 500))
+    run.send(_rows(stream, 10_000, 500))
     time.sleep(2)
     states = run.kill()
     assert [_state_cursor(s) for s in states] == [1], states
-    assert _stats(name) == (1_000, 1_000, 0, 999), _stats(name)
+    assert _stats(name) == (10_000, 10_000, 0, 9_999), _stats(name)
 
     # Airbyte resumes from the last acknowledged state: records after cursor 1.
-    run = WriteRun({stream: "append"}, batch_size=10_000)
-    run.send(_rows(stream, 1_000, 1_000) + [_msg_state(stream, 2)])
+    run = WriteRun({stream: "append"}, batch_size=50_000)
+    run.send(_rows(stream, 10_000, 1_000) + [_msg_state(stream, 2)])
     code, states = run.finish()
     assert code == 0, run.errors()
     assert [_state_cursor(s) for s in states] == [2]
-    assert _stats(name) == (2_000, 2_000, 0, 1_999), _stats(name)
+    assert _stats(name) == (11_000, 11_000, 0, 10_999), _stats(name)
 
 
 @test("write: append failure (server refuses) withholds the state for the failed batch")
@@ -811,7 +813,7 @@ def test_write_append_server_refusal():
     stream, name = "e2e_w_appfail", "airbyte_e2e_w_appfail"
     _fresh(name)
     run = WriteRun({stream: "append"}, batch_size=10_000)
-    run.send(_rows(stream, 0, 100) + [_msg_state(stream, 1)])
+    run.send(_rows(stream, 0, 10_000) + [_msg_state(stream, 1)])
     assert _state_cursor(run.next_state()) == 1
     # A row too large for the server's 50 MB request cap is refused with 413.
     run.send([_msg_record(stream, {"rid": 100, "name": "x" * (51 * 1024 * 1024)})]
@@ -820,7 +822,28 @@ def test_write_append_server_refusal():
     assert code != 0, "the sync must fail"
     assert states == [], states
     assert run.errors(), "expected a TRACE error"
-    assert _stats(name) == (100, 100, 0, 99), _stats(name)
+    assert _stats(name) == (10_000, 10_000, 0, 9_999), _stats(name)
+
+
+@test("write: two sources with the stream's name are refused, both untouched")
+def test_write_refuses_ambiguous_sources():
+    stream, name = "e2e_w_dup", "airbyte_e2e_w_dup"
+    first = _fresh(name, rows=[{"rid": -i, "name": "a", "amount": 0.0, "ts": "x"} for i in range(1, 4)])
+    second = rw_client().sources.create_data_source(
+        name=name, rows=[{"rid": -i, "name": "b", "amount": 0.0, "ts": "x"} for i in range(1, 3)]).id
+    _created_source_ids.append(second)
+    run = WriteRun({stream: "overwrite"})
+    run.send(_rows(stream, 0, 10) + [_msg_state(stream, 1)])
+    code, states = run.finish()
+    assert code != 0 and states == [], (code, states)
+    traces = [m["trace"]["error"] for m in run.messages
+              if m["type"] == "TRACE" and m.get("trace", {}).get("error")]
+    assert traces and traces[0]["failure_type"] == "config_error", traces
+    assert "2 Querri sources are named" in traces[0]["message"]
+    client = rw_client()
+    counts = {sid: client.sources.query(source_id=sid, sql="SELECT count(*) AS n FROM data").data[0]["n"]
+              for sid in (first, second)}
+    assert counts == {first: 3, second: 2}, counts
 
 
 @test("write: zero-record overwrite keeps the existing rows; new stream creates nothing")
@@ -843,7 +866,8 @@ WRITE_TESTS = [
     test_write_overwrite_50k, test_write_overwrite_150k_multi_request,
     test_write_append_three_checkpoints,
     test_write_overwrite_killed_then_rerun, test_write_append_killed_then_resume,
-    test_write_append_server_refusal, test_write_zero_record_overwrite,
+    test_write_append_server_refusal, test_write_refuses_ambiguous_sources,
+    test_write_zero_record_overwrite,
 ]
 
 

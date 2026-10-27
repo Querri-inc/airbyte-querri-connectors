@@ -61,7 +61,9 @@ step. When it finishes, open http://localhost:8000 and sign in with the email an
    source named prefix + stream name, created on the first sync. Stream `orders` becomes
    `airbyte_orders`; a stream already named `airbyte_orders` becomes `airbyte_airbyte_orders`, so
    set the prefix to empty if your stream names already carry one. An existing source with
-   exactly that name is reused, so pre-create one if you want a specific workspace or name.
+   exactly that name is reused only if it is an API source (as the destination creates them);
+   if an upload, a View or a connector's table has the name, the sync stops with an error rather
+   than overwrite it.
 5. Click **Set up destination**. Airbyte runs the connection check, which confirms the key can
    list sources and has `data:write`.
 
@@ -83,7 +85,9 @@ step. When it finishes, open http://localhost:8000 and sign in with the email an
 - **An overwrite that sends zero records leaves the previous rows in place.** The Querri API cannot
   empty a source.
 - **Append** is at least once: if a sync fails mid-batch and Airbyte resumes it, that batch can be
-  written twice.
+  written twice. With a source that sends GLOBAL state (typically CDC) and an Overwrite stream in
+  the same connection, no checkpoint is kept until the sync finishes, so a retry rewrites the
+  whole sync's appends.
 - Views built on a source refresh after each successful write (Querri's view-refresh cascade).
 
 ## Troubleshooting
@@ -94,6 +98,8 @@ step. When it finishes, open http://localhost:8000 and sign in with the email an
 | Check fails: "lacks permission" | The key is missing `data:read` or `data:write`. |
 | Check fails: "base_url must use https" | `http://` is accepted only for `localhost`, `127.0.0.1` and `host.docker.internal`. |
 | Airbyte cannot pull the image | The GHCR package must be public, or the cluster needs pull credentials for `ghcr.io`. |
+| Sync fails: "already exists ... that this destination did not create" | An upload, View or connector source has the same name. Rename it or change the Source Name Prefix. |
+| Sync fails: "would be written to a source named ... (N characters)" | Querri source names are limited to 200 characters. Shorten the prefix or the stream name. |
 | Teammates cannot see the synced tables | The key has no workspace binding, so the sources are in the key creator's personal workspace. Share them, or use a key bound to a shared workspace. |
 | Sync waits and logs "Rate limited ... retrying" | The key's request limit (default 60 per minute) is shared by everything using it. Give Airbyte its own key. |
 | Sync waits and logs "retrying in 10s" | The Querri source is being synced or written by something else; the destination waits for it. |
