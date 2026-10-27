@@ -1,0 +1,578 @@
+connector,name,license,runtime,auth,support,oss_enabled,subtype,querri_has,docs
+source-100ms,100ms,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/100ms
+source-7shifts,7shifts,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/7shifts
+source-activecampaign,ActiveCampaign,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/activecampaign
+source-adjust,Adjust,MIT,python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/adjust
+source-agilecrm,AgileCRM,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/agilecrm
+source-aha,Aha,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/aha
+source-airbyte,Airbyte,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/airbyte
+source-aircall,Aircall,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/aircall
+source-airtable,Airtable,MIT,yaml-only,oauth+key,certified,True,api,False,https://docs.airbyte.com/integrations/sources/airtable
+source-akeneo,Akeneo,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/akeneo
+source-algolia,Algolia,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/algolia
+source-alpaca-broker-api,Alpaca Broker API,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/alpaca-broker-api
+source-alpha-vantage,Alpha Vantage,MIT,yaml+custom-python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/alpha-vantage
+source-amazon-ads,Amazon Ads,MIT,yaml-only,oauth-only,certified,True,api,False,https://docs.airbyte.com/integrations/sources/amazon-ads
+source-amazon-seller-partner,Amazon Seller Partner,MIT,yaml+custom-python,oauth-only,certified,True,api,False,https://docs.airbyte.com/integrations/sources/amazon-seller-partner
+source-amazon-sqs,Amazon SQS,MIT,python,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/amazon-sqs
+source-amplitude,Amplitude,MIT,yaml+custom-python,key/token/basic,certified,True,api,True,https://docs.airbyte.com/integrations/sources/amplitude
+source-apify-dataset,Apify Dataset,MIT,yaml+custom-python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/apify-dataset
+source-appcues,Appcues,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/appcues
+source-appfigures,Appfigures,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/appfigures
+source-appfollow,Appfollow,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/appfollow
+source-apple-search-ads,Apple Ads,MIT,yaml-only,oauth-only,community,True,api,False,https://docs.airbyte.com/integrations/sources/apple-search-ads
+source-appsflyer,AppsFlyer,MIT,python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/appsflyer
+source-appstore-singer,Appstore,MIT,python,unknown (no spec found),archived,False,api,False,https://docs.airbyte.com/integrations/sources/appstore
+source-apptivo,Apptivo,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/apptivo
+source-asana,Asana,MIT,python,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/asana
+source-ashby,Ashby,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/ashby
+source-assemblyai,AssemblyAI,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/assemblyai
+source-auth0,Auth0,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/auth0
+source-aviationstack,Aviationstack,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/aviationstack
+source-avni,Avni,MIT,python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/avni
+source-awin-advertiser,AWIN Advertiser,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/awin-advertiser
+source-aws-cloudtrail,Aws Cloudtrail,MIT,yaml+custom-python,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/aws-cloudtrail
+source-azure-blob-storage,Azure Blob Storage,MIT,python,unknown (no spec found),certified,True,file,False,https://docs.airbyte.com/integrations/sources/azure-blob-storage
+source-azure-table,Azure Table Storage,MIT,python,none/unknown,community,True,database,False,https://docs.airbyte.com/integrations/sources/azure-table
+source-babelforce,Babelforce,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/babelforce
+source-bamboo-hr,BambooHR,MIT,yaml+custom-python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/bamboo-hr
+source-basecamp,Basecamp,MIT,yaml-only,oauth-only,community,True,api,False,https://docs.airbyte.com/integrations/sources/basecamp
+source-beamer,Beamer,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/beamer
+source-bigcommerce,Bigcommerce,MIT,yaml+custom-python,key/token/basic,archived,False,api,False,https://docs.airbyte.com/integrations/sources/bigcommerce
+source-bigmailer,BigMailer,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/bigmailer
+source-bigquery,BigQuery,ELv2,java,unknown (no spec found),community,True,database,True,https://docs.airbyte.com/integrations/sources/bigquery
+source-bing-ads,Bing Ads,MIT,yaml+custom-python,oauth-only,certified,True,api,False,https://docs.airbyte.com/integrations/sources/bing-ads
+source-bitly,Bitly,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/bitly
+source-blogger,Blogger,MIT,yaml-only,oauth-only,community,True,api,False,https://docs.airbyte.com/integrations/sources/blogger
+source-bluetally,Bluetally,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/bluetally
+source-boldsign,BoldSign,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/boldsign
+source-box-data-extract,Box Data Extract,MIT,python,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/box-data-extract
+source-box,Box,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/box
+source-braintree,Braintree,MIT,python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/braintree
+source-braze,Braze,MIT,yaml+custom-python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/braze
+source-breezometer,Breezometer,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/breezometer
+source-breezy-hr,Breezy HR,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/breezy-hr
+source-brevo,Brevo,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/brevo
+source-brex,Brex,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/brex
+source-bugsnag,Bugsnag,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/bugsnag
+source-buildkite,Buildkite,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/buildkite
+source-bunny-inc,"Bunny, Inc.",MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/bunny-inc
+source-buzzsprout,Buzzsprout,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/buzzsprout
+source-cal-com,Cal.com,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/cal-com
+source-calendly,Calendly,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/calendly
+source-callrail,CallRail,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/callrail
+source-campaign-monitor,Campaign Monitor,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/campaign-monitor
+source-campayn,Campayn,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/campayn
+source-canny,Canny,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/canny
+source-capsule-crm,Capsule CRM,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/capsule-crm
+source-captain-data,Captain Data,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/captain-data
+source-care-quality-commission,Care Quality Commission,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/care-quality-commission
+source-cart,Cart.com,MIT,python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/cart
+source-castor-edc,Castor EDC,MIT,yaml-only,oauth-only,community,True,api,False,https://docs.airbyte.com/integrations/sources/castor-edc
+source-chameleon,Chameleon,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/chameleon
+source-chargebee,Chargebee,MIT,yaml+custom-python,key/token/basic,certified,True,api,False,https://docs.airbyte.com/integrations/sources/chargebee
+source-chargedesk,Chargedesk,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/chargedesk
+source-chargify,Chargify,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/chargify
+source-chartmogul,Chartmogul,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/chartmogul
+source-churnkey,churnkey,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/churnkey
+source-cimis,cimis,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/cimis
+source-cin7,Cin7,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/cin7
+source-circa,Circa,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/circa
+source-circleci,Circleci,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/circleci
+source-cisco-meraki,Cisco Meraki,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/cisco-meraki
+source-clarif-ai,Clarif-ai,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/clarif-ai
+source-clazar,Clazar,MIT,yaml-only,oauth-only,community,True,api,False,https://docs.airbyte.com/integrations/sources/clazar
+source-clickhouse-strict-encrypt,ClickHouse,MIT,java,unknown (no spec found),,False,database,False,https://docs.airbyte.com/integrations/sources/clickhouse
+source-clickhouse,ClickHouse,MIT,java,unknown (no spec found),community,True,database,False,https://docs.airbyte.com/integrations/sources/clickhouse
+source-clickup-api,ClickUp,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/clickup-api
+source-clockify,Clockify,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/clockify
+source-clockodo,Clockodo,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/clockodo
+source-close-com,Close.com,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/close-com
+source-cloudbeds,Cloudbeds,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/cloudbeds
+source-coassemble,Coassemble,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/coassemble
+source-cockroachdb,Cockroachdb,MIT,java,unknown (no spec found),community,True,database,False,https://docs.airbyte.com/integrations/sources/cockroachdb
+source-coda,Coda,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/coda
+source-codefresh,Codefresh,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/codefresh
+source-coin-api,Coin API,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/coin-api
+source-coingecko-coins,CoinGecko Coins,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/coingecko-coins
+source-coinmarketcap,CoinMarketCap,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/coinmarketcap
+source-commcare,Commcare,MIT,python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/commcare
+source-commercetools,Commercetools,MIT,python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/commercetools
+source-concord,Concord,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/concord
+source-configcat,ConfigCat,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/configcat
+source-confluence,Confluence,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/confluence
+source-convertkit,ConvertKit,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/convertkit
+source-convex,Convex,MIT,python,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/convex
+source-copper,Copper,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/copper
+source-couchbase,Couchbase,MIT,python,key/token/basic,community,True,database,False,https://docs.airbyte.com/integrations/sources/couchbase
+source-countercyclical,Countercyclical,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/countercyclical
+source-courier,Courier,MIT,python,unknown (no spec found),archived,False,api,False,https://docs.airbyte.com/integrations/sources/courier
+source-customer-io,Customer.io,MIT,yaml-only,key/token/basic,community,True,api,True,https://docs.airbyte.com/integrations/sources/customer-io
+source-customerly,Customerly,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/customerly
+source-datadog,Datadog,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/datadog
+source-datascope,Datascope,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/datascope
+source-db2,IBM Db2,MIT,java,unknown (no spec found),community,True,database,False,https://docs.airbyte.com/integrations/sources/db2
+source-dbt,DBT,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/dbt
+source-delighted,Delighted,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/delighted
+source-deputy,Deputy,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/deputy
+source-ding-connect,Ding Connect,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/ding-connect
+source-dixa,Dixa,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/dixa
+source-dockerhub,Dockerhub,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/dockerhub
+source-docuseal,Docuseal,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/docuseal
+source-dolibarr,Dolibarr,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/dolibarr
+source-dremio,Dremio,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/dremio
+source-drift,Drift,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/drift
+source-drip,Drip,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/drip
+source-dropbox-sign,Dropbox Sign,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/dropbox-sign
+source-dv-360,DV 360,MIT,python,unknown (no spec found),archived,False,api,False,https://docs.airbyte.com/integrations/sources/dv-360
+source-dwolla,Dwolla,MIT,yaml-only,oauth-only,community,True,api,False,https://docs.airbyte.com/integrations/sources/dwolla
+source-dynamodb,DynamoDB,MIT,java,unknown (no spec found),community,True,api,False,https://docs.airbyte.com/integrations/sources/dynamodb
+source-e-conomic,e-conomic,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/e-conomic
+source-e2e-test-cloud,End-to-End Testing (Mock API),MIT,java,unknown (no spec found),community,False,api,False,https://docs.airbyte.com/integrations/sources/e2e-test
+source-e2e-test,E2E Testing,MIT,java,unknown (no spec found),community,True,api,False,https://docs.airbyte.com/integrations/sources/e2e-test
+source-easypost,Easypost,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/easypost
+source-easypromos,Easypromos,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/easypromos
+source-ebay-finance,Ebay Finance,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/ebay-finance
+source-ebay-fulfillment,Ebay Fulfillment,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/ebay-fulfillment
+source-elasticemail,Elasticemail,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/elasticemail
+source-elasticsearch,Elasticsearch,MIT,java,unknown (no spec found),community,True,api,False,https://docs.airbyte.com/integrations/sources/elasticsearch
+source-emailoctopus,EmailOctopus,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/emailoctopus
+source-employment-hero,Employment-Hero,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/employment-hero
+source-encharge,Encharge,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/encharge
+source-eventbrite,Eventbrite,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/eventbrite
+source-eventee,Eventee,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/eventee
+source-eventzilla,Eventzilla,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/eventzilla
+source-everhour,Everhour,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/everhour
+source-exchange-rates,Exchange Rates Api,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/exchange-rates
+source-ezofficeinventory,EZOfficeInventory,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/ezofficeinventory
+source-facebook-marketing,Facebook Marketing,ELv2,python,unknown (no spec found),certified,True,api,False,https://docs.airbyte.com/integrations/sources/facebook-marketing
+source-facebook-pages,Facebook Pages,ELv2,python,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/facebook-pages
+source-factorial,Factorial,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/factorial
+source-faker,Sample Data,MIT,python,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/faker
+source-fastbill,Fastbill,MIT,yaml+custom-python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/fastbill
+source-fastly,Fastly,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/fastly
+source-fauna,Fauna,MIT,python,none/unknown,community,True,database,False,https://docs.airbyte.com/integrations/sources/fauna
+source-file,"File (CSV, JSON, Excel, Feather, Parquet)",MIT,python,key/token/basic,certified,True,file,False,https://docs.airbyte.com/integrations/sources/file
+source-fillout,Fillout,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/fillout
+source-finage,Finage,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/finage
+source-financial-modelling,Financial Modelling,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/financial-modelling
+source-finnhub,Finnhub,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/finnhub
+source-finnworlds,Finnworlds,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/finnworlds
+source-firebase-realtime-database,Firebase Realtime Database,MIT,python,none/unknown,community,True,database,False,https://docs.airbyte.com/integrations/sources/firebase-realtime-database
+source-firebolt,Firebolt,MIT,python,none/unknown,community,True,database,False,https://docs.airbyte.com/integrations/sources/firebolt
+source-firehydrant,FireHydrant,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/firehydrant
+source-fleetio,Fleetio,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/fleetio
+source-flexmail,Flexmail,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/flexmail
+source-flexport,Flexport,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/flexport
+source-float,float,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/float
+source-flowlu,Flowlu,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/flowlu
+source-formbricks,Formbricks,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/formbricks
+source-free-agent-connector,FreeAgent,MIT,yaml-only,oauth-only,community,True,api,False,https://docs.airbyte.com/integrations/sources/free-agent-connector
+source-freightview,Freightview,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/freightview
+source-freshbooks,FreshBooks,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/freshbooks
+source-freshcaller,Freshcaller,MIT,python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/freshcaller
+source-freshchat,Freshchat,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/freshchat
+source-freshdesk,Freshdesk,MIT,yaml+custom-python,key/token/basic,certified,True,api,False,https://docs.airbyte.com/integrations/sources/freshdesk
+source-freshsales,Freshsales,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/freshsales
+source-freshservice,Freshservice,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/freshservice
+source-front,Front,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/front
+source-fulcrum,Fulcrum,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/fulcrum
+source-fullstory,Fullstory,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/fullstory
+source-gainsight-px,Gainsight Px,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/gainsight-px
+source-gcs,Google Cloud Storage (GCS),ELv2,python,unknown (no spec found),certified,True,file,False,https://docs.airbyte.com/integrations/sources/gcs
+source-genesys,Genesys,MIT,python,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/genesys
+source-getgist,GetGist,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/getgist
+source-getlago,Lago,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/getlago
+source-giphy,Giphy,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/giphy
+source-gitbook,GitBook,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/gitbook
+source-github,GitHub,MIT,python,oauth+key,certified,True,api,False,https://docs.airbyte.com/integrations/sources/github
+source-gitlab,Gitlab,MIT,yaml+custom-python,oauth+key,certified,True,api,False,https://docs.airbyte.com/integrations/sources/gitlab
+source-glassfrog,Glassfrog,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/glassfrog
+source-gmail,Gmail,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/gmail
+source-gnews,GNews,MIT,yaml+custom-python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/gnews
+source-gocardless,GoCardless,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/gocardless
+source-goldcast,Goldcast,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/goldcast
+source-gologin,GoLogin,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/gologin
+source-gong,Gong,MIT,yaml+custom-python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/gong
+source-google-ads,Google Ads,Elv2,python,oauth+key,certified,True,api,True,https://docs.airbyte.com/integrations/sources/google-ads
+source-google-analytics-data-api,Google Analytics 4 (GA4),Elv2,yaml+custom-python,oauth+key,certified,True,api,True,https://docs.airbyte.com/integrations/sources/google-analytics-data-api
+source-google-analytics-v4-service-account-only,Google Analytics (Universal Analytics),Elv2,python,none/unknown,archived,False,api,False,https://docs.airbyte.com/integrations/sources/google-analytics-v4-service-account-only
+source-google-analytics-v4,Google Analytics (Universal Analytics),Elv2,python,oauth+key,archived,False,api,True,https://docs.airbyte.com/integrations/sources/google-analytics-v4
+source-google-calendar,Google Calendar,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/google-calendar
+source-google-classroom,Google Classroom,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/google-classroom
+source-google-directory,Google Directory,MIT,python,oauth-only,community,True,api,False,https://docs.airbyte.com/integrations/sources/google-directory
+source-google-drive,Google Drive,ELv2,python,unknown (no spec found),community,True,file,True,https://docs.airbyte.com/integrations/sources/google-drive
+source-google-forms,Google Forms,MIT,yaml-only,oauth-only,community,True,api,False,https://docs.airbyte.com/integrations/sources/google-forms
+source-google-pagespeed-insights,Google PageSpeed Insights,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/google-pagespeed-insights
+source-google-search-console,Google Search Console,Elv2,yaml+custom-python,oauth+key,certified,True,api,False,https://docs.airbyte.com/integrations/sources/google-search-console
+source-google-sheets,Google Sheets,Elv2,yaml+custom-python,oauth-only,certified,True,file,False,https://docs.airbyte.com/integrations/sources/google-sheets
+source-google-tasks,Google Tasks,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/google-tasks
+source-google-webfonts,Google Webfonts,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/google-webfonts
+source-google-workspace-admin-reports,Google Workspace Admin Reports,MIT,python,unknown (no spec found),archived,False,api,False,https://docs.airbyte.com/integrations/sources/google-workspace-admin-reports
+source-gorgias,Gorgias,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/gorgias
+source-greenhouse,Greenhouse,MIT,yaml+custom-python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/greenhouse
+source-greythr,GreytHr,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/greythr
+source-gridly,Gridly,MIT,python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/gridly
+source-guru,Guru,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/guru
+source-gutendex,Gutendex,MIT,yaml-only,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/gutendex
+source-hardcoded-records,Hardcoded Records,MIT,python,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/hardcoded-records
+source-harness,Harness,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/harness
+source-harvest,Harvest,MIT,yaml-only,oauth+key,certified,True,api,False,https://docs.airbyte.com/integrations/sources/harvest
+source-height,Height,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/height
+source-hellobaton,Hellobaton,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/hellobaton
+source-help-scout,Help Scout,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/help-scout
+source-hibob,Hibob,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/hibob
+source-high-level,High Level,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/high-level
+source-hoorayhr,HoorayHR,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/hoorayhr
+source-hubplanner,Hubplanner,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/hubplanner
+source-hubspot,HubSpot,ELv2,yaml+custom-python,oauth+key,certified,True,api,True,https://docs.airbyte.com/integrations/sources/hubspot
+source-hugging-face-datasets,Hugging Face - Datasets,MIT,yaml-only,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/hugging-face-datasets
+source-humanitix,Humanitix,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/humanitix
+source-huntr,Huntr,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/huntr
+source-illumina-basespace,Illumina Basespace,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/illumina-basespace
+source-imagga,Imagga,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/imagga
+source-incident-io,Incident,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/incident-io
+source-inflowinventory,Inflowinventory,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/inflowinventory
+source-insightful,Insightful,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/insightful
+source-insightly,Insightly,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/insightly
+source-instagram,Instagram,MIT,yaml+custom-python,oauth+key,certified,True,api,False,https://docs.airbyte.com/integrations/sources/instagram
+source-instatus,Instatus,MIT,yaml+custom-python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/instatus
+source-intercom,Intercom,MIT,yaml+custom-python,oauth+key,certified,True,api,True,https://docs.airbyte.com/integrations/sources/intercom
+source-intruder,Intruder,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/intruder
+source-invoiced,Invoiced,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/invoiced
+source-invoiceninja,Invoiceninja,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/invoiceninja
+source-ip2whois,IP2Whois,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/ip2whois
+source-iterable,Iterable,MIT,python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/iterable
+source-jamf-pro,Jamf Pro,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/jamf-pro
+source-jina-ai-reader,Jina AI Reader,MIT,python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/jina-ai-reader
+source-jira,Jira,MIT,yaml+custom-python,key/token/basic,certified,True,api,False,https://docs.airbyte.com/integrations/sources/jira
+source-jobnimbus,JobNimbus,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/jobnimbus
+source-jotform,Jotform,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/jotform
+source-judge-me-reviews,Judge.me Reviews,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/judge-me-reviews
+source-just-sift,JustSift,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/just-sift
+source-justcall,JustCall,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/justcall
+source-k6-cloud,K6 Cloud,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/k6-cloud
+source-kafka,Kafka,MIT,java,unknown (no spec found),community,True,database,False,https://docs.airbyte.com/integrations/sources/kafka
+source-katana,Katana,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/katana
+source-keka,Keka,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/keka
+source-kisi,Kisi,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/kisi
+source-kissmetrics,Kissmetrics,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/kissmetrics
+source-klarna,Klarna,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/klarna
+source-klaus-api,Klaus Api,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/klaus-api
+source-klaviyo,Klaviyo,MIT,yaml+custom-python,key/token/basic,certified,True,api,False,https://docs.airbyte.com/integrations/sources/klaviyo
+source-kustomer-singer,Kustomer,MIT,python,unknown (no spec found),archived,False,api,False,https://docs.airbyte.com/integrations/sources/kustomer-singer
+source-kyriba,Kyriba,MIT,python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/kyriba
+source-kyve,KYVE,MIT,python,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/kyve
+source-launchdarkly,LaunchDarkly,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/launchdarkly
+source-leadfeeder,Leadfeeder,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/leadfeeder
+source-lemlist,Lemlist,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/lemlist
+source-less-annoying-crm,Less Annoying CRM,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/less-annoying-crm
+source-lever-hiring,Lever Hiring,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/lever-hiring
+source-lightspeed-retail,Lightspeed Retail,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/lightspeed-retail
+source-linear,Linear,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/linear
+source-linkedin-ads,LinkedIn Ads,MIT,yaml+custom-python,oauth+key,certified,True,api,False,https://docs.airbyte.com/integrations/sources/linkedin-ads
+source-linkedin-pages,Linkedin Pages,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/linkedin-pages
+source-linnworks,Linnworks,MIT,python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/linnworks
+source-lob,Lob,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/lob
+source-lokalise,Lokalise,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/lokalise
+source-looker,Looker,MIT,python,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/looker
+source-luma,lu.ma,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/luma
+source-mailchimp,Mailchimp,MIT,yaml+custom-python,oauth+key,certified,True,api,True,https://docs.airbyte.com/integrations/sources/mailchimp
+source-mailerlite,MailerLite,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/mailerlite
+source-mailersend,MailerSend,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/mailersend
+source-mailgun,Mailgun,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/mailgun
+source-mailjet-mail,Mailjet Mail,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/mailjet-mail
+source-mailjet-sms,Mailjet SMS,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/mailjet-sms
+source-mailosaur,Mailosaur,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/mailosaur
+source-mailtrap,Mailtrap,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/mailtrap
+source-marketo,Marketo,ELv2,python,oauth-only,community,True,api,False,https://docs.airbyte.com/integrations/sources/marketo
+source-marketstack,Marketstack,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/marketstack
+source-mendeley,Mendeley,MIT,yaml-only,oauth-only,community,True,api,False,https://docs.airbyte.com/integrations/sources/mendeley
+source-mention,Mention,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/mention
+source-mercado-ads,Mercado Ads,MIT,yaml-only,oauth-only,community,True,api,False,https://docs.airbyte.com/integrations/sources/mercado-ads
+source-merge,Merge,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/merge
+source-metabase,Metabase,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/metabase
+source-microsoft-dataverse,Microsoft Dataverse,MIT,python,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/microsoft-dataverse
+source-microsoft-entra-id,Microsoft Entra Id,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/microsoft-entra-id
+source-microsoft-lists,Microsoft Lists,MIT,yaml-only,oauth-only,community,True,api,False,https://docs.airbyte.com/integrations/sources/microsoft-lists
+source-microsoft-onedrive,Microsoft OneDrive,MIT,python,unknown (no spec found),community,True,file,False,https://docs.airbyte.com/integrations/sources/microsoft-onedrive
+source-microsoft-sharepoint,Microsoft SharePoint,MIT,python,unknown (no spec found),certified,True,file,False,https://docs.airbyte.com/integrations/sources/microsoft-sharepoint
+source-microsoft-teams,Microsoft Teams,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/microsoft-teams
+source-miro,Miro,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/miro
+source-missive,Missive,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/missive
+source-mixmax,MixMax,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/mixmax
+source-mixpanel,Mixpanel,MIT,python,key/token/basic,community,True,api,True,https://docs.airbyte.com/integrations/sources/mixpanel
+source-mode,Mode,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/mode
+source-monday,Monday,MIT,yaml+custom-python,oauth+key,certified,True,api,False,https://docs.airbyte.com/integrations/sources/monday
+source-mongodb-v2,MongoDb,ELv2,java,unknown (no spec found),certified,True,database,False,https://docs.airbyte.com/integrations/sources/mongodb-v2
+source-mssql,Microsoft SQL Server (MSSQL),ELv2,java,unknown (no spec found),certified,True,database,True,https://docs.airbyte.com/integrations/sources/mssql
+source-mux,Mux,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/mux
+source-my-hours,My Hours,MIT,yaml+custom-python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/my-hours
+source-mysql,MySQL,ELv2,java,unknown (no spec found),certified,True,database,True,https://docs.airbyte.com/integrations/sources/mysql
+source-n8n,n8n,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/n8n
+source-nasa,Nasa,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/nasa
+source-navan,Navan,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/navan
+source-nebius-ai,Nebius AI,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/nebius-ai
+source-netsuite,Netsuite,MIT,python,none/unknown,community,True,api,True,https://docs.airbyte.com/integrations/sources/netsuite
+source-news-api,News Api,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/news-api
+source-newsdata-io,NewsData.io,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/newsdata-io
+source-newsdata,Newsdata,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/newsdata
+source-nexiopay,Nexiopay,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/nexiopay
+source-ninjaone-rmm,NinjaOne RMM,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/ninjaone-rmm
+source-nocrm,NoCRM,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/nocrm
+source-northpass-lms,Northpass LMS,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/northpass-lms
+source-notion,Notion,MIT,python,oauth+key,certified,True,api,False,https://docs.airbyte.com/integrations/sources/notion
+source-nutshell,Nutshell,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/nutshell
+source-nylas,Nylas,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/nylas
+source-nytimes,New York Times,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/nytimes
+source-okta,Okta,MIT,python,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/okta
+source-omnisend,Omnisend,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/omnisend
+source-oncehub,Oncehub,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/oncehub
+source-onepagecrm,Onepagecrm,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/onepagecrm
+source-onesignal,OneSignal,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/onesignal
+source-onfleet,Onfleet,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/onfleet
+source-open-data-dc,Open Data DC,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/open-data-dc
+source-open-exchange-rates,Open Exchange Rates,MIT,yaml-only,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/open-exchange-rates
+source-openaq,OpenAQ,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/openaq
+source-openfda,OpenFDA,MIT,yaml-only,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/openfda
+source-openweather,Openweather,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/openweather
+source-opinion-stage,Opinion Stage,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/opinion-stage
+source-opsgenie,Opsgenie,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/opsgenie
+source-opuswatch,OPUSWatch,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/opuswatch
+source-oracle-strict-encrypt,Oracle DB,ELv2,java,unknown (no spec found),,False,database,False,https://docs.airbyte.com/integrations/sources/oracle
+source-oracle,Oracle DB,ELv2,java,unknown (no spec found),community,True,database,True,https://docs.airbyte.com/integrations/sources/oracle
+source-orb,Orb,MIT,yaml+custom-python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/orb
+source-oura,Oura,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/oura
+source-outbrain-amplify,Outbrain Amplify,MIT,python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/outbrain-amplify
+source-outreach,Outreach,MIT,yaml+custom-python,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/outreach
+source-oveit,Oveit,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/oveit
+source-pabbly-subscriptions-billing,Pabbly Subscriptions Billing,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/pabbly-subscriptions-billing
+source-paddle,Paddle,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/paddle
+source-pagerduty,Pagerduty,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/pagerduty
+source-pandadoc,PandaDoc,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/pandadoc
+source-paperform,Paperform,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/paperform
+source-papersign,Papersign,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/papersign
+source-pardot,Pardot,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/pardot
+source-partnerize,Partnerize,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/partnerize
+source-partnerstack,PartnerStack,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/partnerstack
+source-payfit,PayFit,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/payfit
+source-paypal-transaction,Paypal Transaction,MIT,yaml+custom-python,oauth+key,certified,True,api,False,https://docs.airbyte.com/integrations/sources/paypal-transaction
+source-paystack,Paystack,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/paystack
+source-pendo,Pendo,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/pendo
+source-pennylane,Pennylane,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/pennylane
+source-perigon,Perigon,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/perigon
+source-persistiq,PersistIq,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/persistiq
+source-persona,Persona,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/persona
+source-pexels-api,Pexels API,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/pexels-api
+source-phyllo,Phyllo,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/phyllo
+source-picqer,Picqer,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/picqer
+source-pingdom,Pingdom,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/pingdom
+source-pinterest,Pinterest,MIT,python,oauth-only,certified,True,api,False,https://docs.airbyte.com/integrations/sources/pinterest
+source-pipedrive,Pipedrive,MIT,yaml+custom-python,key/token/basic,community,True,api,True,https://docs.airbyte.com/integrations/sources/pipedrive
+source-pipeliner,Pipeliner,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/pipeliner
+source-pivotal-tracker,Pivotal Tracker,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/pivotal-tracker
+source-piwik,Piwik,MIT,yaml-only,oauth-only,community,True,api,False,https://docs.airbyte.com/integrations/sources/piwik
+source-plaid,Plaid,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/plaid
+source-planhat,Planhat,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/planhat
+source-plausible,Plausible,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/plausible
+source-pocket,Pocket,MIT,yaml+custom-python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/pocket
+source-pokeapi,PokeAPI,MIT,yaml-only,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/pokeapi
+source-polygon-stock-api,Polygon Stock API,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/polygon-stock-api
+source-poplar,Poplar,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/poplar
+source-postgres,Postgres,ELv2,java,unknown (no spec found),certified,True,database,True,https://docs.airbyte.com/integrations/sources/postgres
+source-posthog,PostHog,MIT,python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/posthog
+source-postmarkapp,Postmark App,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/postmarkapp
+source-prestashop,PrestaShop,MIT,yaml+custom-python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/prestashop
+source-pretix,Pretix,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/pretix
+source-primetric,Primetric,MIT,yaml-only,oauth-only,community,True,api,False,https://docs.airbyte.com/integrations/sources/primetric
+source-printify,Printify,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/printify
+source-productboard,Productboard,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/productboard
+source-productive,Productive,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/productive
+source-public-apis,Public Apis,MIT,python,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/public-apis
+source-punk-api,Punk API,MIT,python,unknown (no spec found),archived,False,api,False,https://docs.airbyte.com/integrations/sources/punk-api
+source-pypi,PyPI,MIT,yaml-only,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/pypi
+source-qonto,Qonto My,MIT,yaml-only,key/token/basic,community,,api,False,https://docs.airbyte.com/integrations/sources/qonto
+source-qualaroo,Qualaroo,MIT,yaml+custom-python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/qualaroo
+source-quickbooks,QuickBooks,MIT,yaml-only,oauth+key,community,True,api,True,https://docs.airbyte.com/integrations/sources/quickbooks
+source-railz,Railz,MIT,yaml+custom-python,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/railz
+source-rd-station-marketing,RD Station Marketing,MIT,yaml-only,oauth-only,community,True,api,False,https://docs.airbyte.com/integrations/sources/rd-station-marketing
+source-recharge,Recharge,MIT,python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/recharge
+source-recreation,Recreation,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/recreation
+source-recruitee,Recruitee,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/recruitee
+source-recurly,Recurly,MIT,yaml+custom-python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/recurly
+source-reddit,Reddit,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/reddit
+source-redshift,Redshift,ELv2,java,unknown (no spec found),community,True,database,True,https://docs.airbyte.com/integrations/sources/redshift
+source-referralhero,referralhero,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/referralhero
+source-rentcast,RentCast,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/rentcast
+source-repairshopr,Repairshopr,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/repairshopr
+source-reply-io,Reply.io,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/reply-io
+source-retailexpress-by-maropost,Retail Express by Maropost,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/retailexpress-by-maropost
+source-retently,Retently,MIT,yaml+custom-python,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/retently
+source-revenuecat,RevenueCat,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/revenuecat
+source-revolut-merchant,Revolut Merchant,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/revolut-merchant
+source-ringcentral,Ringcentral,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/ringcentral
+source-rki-covid,RKI Covid,MIT,python,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/rki-covid
+source-rocket-chat,Rocket.chat,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/rocket-chat
+source-rocketlane,Rocketlane,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/rocketlane
+source-rollbar,Rollbar,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/rollbar
+source-rootly,Rootly,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/rootly
+source-rss,Rss,MIT,python,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/rss
+source-ruddr,Ruddr,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/ruddr
+source-s3,S3,ELv2,python,unknown (no spec found),certified,True,file,False,https://docs.airbyte.com/integrations/sources/s3
+source-safetyculture,SafetyCulture,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/safetyculture
+source-sage-hr,Sage HR,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/sage-hr
+source-salesflare,Salesflare,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/salesflare
+source-salesforce,Salesforce,ELv2,python,oauth-only,certified,True,api,True,https://docs.airbyte.com/integrations/sources/salesforce
+source-salesloft,Salesloft,MIT,yaml+custom-python,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/salesloft
+source-sap-fieldglass,SAP Fieldglass,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/sap-fieldglass
+source-savvycal,SavvyCal,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/savvycal
+source-scaffold-java-jdbc,Scaffold Java Jdbc,MIT,java,unknown (no spec found),community,False,database,False,https://docs.airbyte.com/integrations/sources/scaffold-java-jdbc
+source-scryfall,Scryfall,MIT,yaml-only,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/scryfall
+source-search-metrics,SearchMetrics,MIT,python,unknown (no spec found),archived,False,api,False,https://docs.airbyte.com/integrations/sources/search-metrics
+source-secoda,Secoda,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/secoda
+source-segment,Segment,MIT,yaml-only,key/token/basic,community,True,api,True,https://docs.airbyte.com/integrations/sources/segment
+source-sendgrid,Sendgrid,MIT,yaml-only,key/token/basic,certified,True,api,False,https://docs.airbyte.com/integrations/sources/sendgrid
+source-sendinblue,Sendinblue,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/sendinblue
+source-sendowl,Sendowl,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/sendowl
+source-sendpulse,SendPulse,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/sendpulse
+source-senseforce,Senseforce,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/senseforce
+source-sentry,Sentry,MIT,yaml-only,key/token/basic,certified,True,api,False,https://docs.airbyte.com/integrations/sources/sentry
+source-serpstat,Serpstat,MIT,yaml-only,key/token/basic,,True,api,False,https://docs.airbyte.com/integrations/sources/serpstat
+source-sftp-bulk,SFTP Bulk,MIT,python,unknown (no spec found),community,True,file,False,https://docs.airbyte.com/integrations/sources/sftp-bulk
+source-sftp,SFTP,MIT,java,unknown (no spec found),community,True,file,False,https://docs.airbyte.com/integrations/sources/sftp
+source-sharetribe,Sharetribe,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/sharetribe
+source-shippo,Shippo,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/shippo
+source-shipstation,Shipstation,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/shipstation
+source-shopify,Shopify,ELv2,python,oauth+key,certified,True,api,False,https://docs.airbyte.com/integrations/sources/shopify
+source-shopwired,ShopWired,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/shopwired
+source-shortcut,Shortcut,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/shortcut
+source-shortio,Shortio,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/shortio
+source-shutterstock,Shutterstock,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/shutterstock
+source-sigma-computing,Sigma Computing,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/sigma-computing
+source-signnow,SignNow,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/signnow
+source-simfin,SimFin,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/simfin
+source-simplecast,SimpleCast,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/simplecast
+source-simplesat,Simplesat,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/simplesat
+source-singlestore,SingleStore,MIT,java,unknown (no spec found),community,True,database,False,https://docs.airbyte.com/integrations/sources/singlestore
+source-slack,Slack,MIT,python,oauth+key,certified,True,api,False,https://docs.airbyte.com/integrations/sources/slack
+source-smaily,Smaily,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/smaily
+source-smartengage,SmartEngage,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/smartengage
+source-smartreach,Smartreach,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/smartreach
+source-smartsheets,Smartsheets,MIT,python,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/smartsheets
+source-smartwaiver,Smartwaiver,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/smartwaiver
+source-snapchat-marketing,Snapchat Marketing,MIT,yaml-only,oauth+key,certified,True,api,False,https://docs.airbyte.com/integrations/sources/snapchat-marketing
+source-snowflake,Snowflake,ELv2,java,unknown (no spec found),certified,True,database,True,https://docs.airbyte.com/integrations/sources/snowflake
+source-solarwinds-service-desk,Solarwinds Service Desk,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/solarwinds-service-desk
+source-sonar-cloud,Sonar Cloud,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/sonar-cloud
+source-spacex-api,SpaceX API,MIT,yaml-only,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/spacex-api
+source-sparkpost,SparkPost,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/sparkpost
+source-split-io,Split-io,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/split-io
+source-spotify-ads,Spotify Ads,MIT,yaml-only,oauth-only,community,True,api,False,https://docs.airbyte.com/integrations/sources/spotify-ads
+source-spotlercrm,SpotlerCRM,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/spotlercrm
+source-square,Square,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/square
+source-squarespace,Squarespace,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/squarespace
+source-statsig,Statsig,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/statsig
+source-statuspage,Statuspage,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/statuspage
+source-stockdata,StockData,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/stockdata
+source-strava,Strava,MIT,yaml-only,oauth-only,community,True,api,False,https://docs.airbyte.com/integrations/sources/strava
+source-stripe,Stripe,ELv2,yaml-only,key/token/basic,certified,True,api,True,https://docs.airbyte.com/integrations/sources/stripe
+source-survey-sparrow,SurveySparrow,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/survey-sparrow
+source-surveycto,SurveyCTO,MIT,python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/surveycto
+source-surveymonkey,SurveyMonkey,MIT,python,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/surveymonkey
+source-survicate,Survicate,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/survicate
+source-svix,Svix,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/svix
+source-systeme,Systeme,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/systeme
+source-taboola,Taboola,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/taboola
+source-talkdesk-explore,TalkDesk Explore,MIT,python,unknown (no spec found),archived,False,api,False,https://docs.airbyte.com/integrations/sources/talkdesk-explore
+source-tavus,Tavus,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/tavus
+source-teamtailor,Teamtailor,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/teamtailor
+source-teamwork,Teamwork,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/teamwork
+source-tempo,Tempo,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/tempo
+source-teradata,Teradata,MIT,java,unknown (no spec found),community,True,database,False,https://docs.airbyte.com/integrations/sources/teradata
+source-testrail,Testrail,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/testrail
+source-the-guardian-api,The Guardian API,MIT,yaml+custom-python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/the-guardian-api
+source-thinkific-courses,Thinkific Courses,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/thinkific-courses
+source-thinkific,Thinkific,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/thinkific
+source-thrive-learning,Thrive Learning,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/thrive-learning
+source-ticketmaster,Ticketmaster,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/ticketmaster
+source-tickettailor,TicketTailor,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/tickettailor
+source-tidb,TiDB,MIT,java,unknown (no spec found),community,True,database,False,https://docs.airbyte.com/integrations/sources/tidb
+source-tiktok-marketing,TikTok Marketing,MIT,yaml+custom-python,oauth+key,certified,True,api,False,https://docs.airbyte.com/integrations/sources/tiktok-marketing
+source-timely,Timely,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/timely
+source-tinyemail,Tinyemail,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/tinyemail
+source-tmdb,TMDb,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/tmdb
+source-todoist,Todoist,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/todoist
+source-toggl,Toggl,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/toggl
+source-tplcentral,TPLcentral,MIT,python,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/tplcentral
+source-track-pms,Track PMS,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/track-pms
+source-trello,Trello,MIT,yaml+custom-python,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/trello
+source-tremendous,Tremendous,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/tremendous
+source-trustpilot,TrustPilot,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/trustpilot
+source-tvmaze-schedule,TVMaze Schedule,MIT,yaml-only,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/tvmaze-schedule
+source-twelve-data,Twelve Data,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/twelve-data
+source-twilio-taskrouter,Twilio Taskrouter,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/twilio-taskrouter
+source-twilio,Twilio,MIT,python,none/unknown,certified,True,api,False,https://docs.airbyte.com/integrations/sources/twilio
+source-twitter,Twitter,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/twitter
+source-tyntec-sms,Tyntec SMS,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/tyntec-sms
+source-typeform,Typeform,MIT,yaml+custom-python,oauth+key,certified,True,api,False,https://docs.airbyte.com/integrations/sources/typeform
+source-ubidots,Ubidots,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/ubidots
+source-unleash,Unleash,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/unleash
+source-uppromote,UpPromote,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/uppromote
+source-uptick,Uptick,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/uptick
+source-us-census,US Census,MIT,yaml+custom-python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/us-census
+source-uservoice,Uservoice,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/uservoice
+source-vantage,Vantage,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/vantage
+source-veeqo,Veeqo,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/veeqo
+source-vercel,Vercel,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/vercel
+source-visma-economic,Visma Economic,MIT,yaml-only,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/visma-economic
+source-vitally,Vitally,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/vitally
+source-vwo,VWO,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/vwo
+source-waiteraid,Waiteraid,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/waiteraid
+source-wasabi-stats-api,Wasabi,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/wasabi-stats-api
+source-watchmode,Watchmode,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/watchmode
+source-weatherstack,Weatherstack,MIT,yaml-only,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/weatherstack
+source-web-scrapper,Web Scrapper,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/web-scrapper
+source-webflow,Webflow,MIT,python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/webflow
+source-when-i-work,When_i_work,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/when-i-work
+source-whisky-hunter,Whisky Hunter,MIT,yaml-only,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/whisky-hunter
+source-wikipedia-pageviews,Wikipedia Pageviews,MIT,yaml-only,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/wikipedia-pageviews
+source-woocommerce,WooCommerce,MIT,yaml-only,key/token/basic,certified,True,api,False,https://docs.airbyte.com/integrations/sources/woocommerce
+source-wordpress,Wordpress,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/wordpress
+source-workable,Workable,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/workable
+source-workflowmax,Workflowmax,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/workflowmax
+source-workramp,Workramp,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/workramp
+source-wrike,Wrike,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/wrike
+source-wufoo,Wufoo,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/wufoo
+source-xero,Xero,MIT,yaml+custom-python,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/xero
+source-xkcd,Xkcd,MIT,yaml-only,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/xkcd
+source-xsolla,Xsolla,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/xsolla
+source-yahoo-finance-price,Yahoo Finance Price,MIT,yaml-only,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/yahoo-finance-price
+source-yandex-metrica,Yandex Metrica,MIT,python,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/yandex-metrica
+source-yotpo,Yotpo,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/yotpo
+source-you-need-a-budget-ynab,You Need A Budget (YNAB),MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/you-need-a-budget-ynab
+source-younium,Younium,MIT,yaml+custom-python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/younium
+source-yousign,YouSign,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/yousign
+source-youtube-analytics,YouTube Analytics,MIT,python,oauth-only,community,True,api,False,https://docs.airbyte.com/integrations/sources/youtube-analytics
+source-youtube-data,Youtube Data,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/youtube-data
+source-zapier-supported-storage,Zapier Supported Storage,MIT,yaml-only,none/unknown,community,True,api,False,https://docs.airbyte.com/integrations/sources/zapier-supported-storage
+source-zapsign,ZapSign,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/zapsign
+source-zendesk-chat,Zendesk Chat,MIT,yaml+custom-python,oauth+key,certified,True,api,True,https://docs.airbyte.com/integrations/sources/zendesk-chat
+source-zendesk-sell,Zendesk Sell,MIT,yaml-only,key/token/basic,community,False,api,True,https://docs.airbyte.com/integrations/sources/zendesk-sell
+source-zendesk-sunshine,Zendesk Sunshine,MIT,yaml+custom-python,oauth+key,community,True,api,True,https://docs.airbyte.com/integrations/sources/zendesk-sunshine
+source-zendesk-support,Zendesk Support,ELv2,yaml+custom-python,oauth+key,certified,True,api,True,https://docs.airbyte.com/integrations/sources/zendesk-support
+source-zendesk-talk,Zendesk Talk,MIT,yaml+custom-python,oauth+key,certified,True,api,True,https://docs.airbyte.com/integrations/sources/zendesk-talk
+source-zenefits,Zenefits,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/zenefits
+source-zenloop,Zenloop,MIT,python,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/zenloop
+source-zoho-analytics-metadata-api,Zoho Analytics metadata api,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/zoho-analytics-metadata-api
+source-zoho-bigin,Zoho Bigin,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/zoho-bigin
+source-zoho-billing,Zoho Billing,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/zoho-billing
+source-zoho-books,Zoho Books,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/zoho-books
+source-zoho-campaign,Zoho Campaign,MIT,yaml-only,oauth-only,community,True,api,False,https://docs.airbyte.com/integrations/sources/zoho-campaign
+source-zoho-crm,ZohoCRM,MIT,python,oauth-only,community,True,api,False,https://docs.airbyte.com/integrations/sources/zoho-crm
+source-zoho-desk,Zoho Desk,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/zoho-desk
+source-zoho-expense,Zoho Expense,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/zoho-expense
+source-zoho-inventory,Zoho Inventory,MIT,yaml-only,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/zoho-inventory
+source-zoho-invoice,Zoho Invoice,MIT,yaml-only,oauth-only,community,True,api,False,https://docs.airbyte.com/integrations/sources/zoho-invoice
+source-zonka-feedback,Zonka Feedback,MIT,yaml-only,key/token/basic,community,True,api,False,https://docs.airbyte.com/integrations/sources/zonka-feedback
+source-zoom,Zoom,MIT,yaml+custom-python,oauth+key,community,True,api,False,https://docs.airbyte.com/integrations/sources/zoom
+source-zuora,Zuora,MIT,python,unknown (no spec found),archived,False,api,False,https://docs.airbyte.com/integrations/sources/zuora

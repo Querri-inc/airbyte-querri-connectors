@@ -47,9 +47,8 @@ class SourceQuerri(AbstractSource):
         """Verify the API key and org_id are valid by listing sources."""
         try:
             client = self._make_client(config)
-            sources = client.sources.list()
-            # Access first item if available to verify the call succeeded
-            next(iter(sources), None)
+            # Force iteration to trigger the HTTP call (SyncCursorPage is lazy)
+            next(iter(client.sources.list(limit=1)), None)
             return True, None
         except Exception as e:
             return False, _format_error(e)
@@ -62,8 +61,8 @@ class SourceQuerri(AbstractSource):
         """
         client = self._make_client(config)
 
-        # Returns List[Dict] with "id", "name" keys
-        all_sources = client.sources.list()
+        # Auto-paginating, 100 per page; items are dicts with "id", "name" keys
+        all_sources = list(client.sources.list(limit=100))
 
         # Optionally filter to specific source IDs
         filter_ids = config.get("source_ids", [])

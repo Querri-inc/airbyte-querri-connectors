@@ -59,14 +59,14 @@ QUERRI_API_KEY=qk_... QUERRI_READ_ONLY_KEY=qk_... QUERRI_ORG_ID=org_... python e
 
 ### Source Connector Flow
 
-1. **Check**: `client.sources.list()` — verifies credentials.
-2. **Discover**: `client.sources.list()` returns all sources as `List[Dict]`. For each, calls `client.sources.get(id)` to get `column_types` for JSON schema generation. Both return dicts (access via `source["id"]`, `source["name"]`).
+1. **Check**: `client.sources.list(limit=1)` — verifies credentials.
+2. **Discover**: `client.sources.list(limit=100)` auto-paginates all sources as dicts. For each, calls `client.sources.get(id)` to get `column_types` for JSON schema generation. Both return dicts (access via `source["id"]`, `source["name"]`).
 3. **Read**: `QuerriSourceStream.read_records()` paginates through `client.sources.source_data()` in 10k-row pages. Enriches each row with `_querri_source_id` and `_querri_source_name`.
 4. **Incremental**: Tracks `updated_at` cursor per source. Skips unchanged sources.
 
 ### Destination Connector Flow
 
-1. **Check**: `client.sources.list()` — verifies credentials.
+1. **Check**: `client.sources.list(limit=1)` — verifies credentials.
 2. **Resolve**: Maps each Airbyte stream to an existing Querri source by name (`airbyte_` prefix). `list()` returns `List[Dict]` — access via `source["name"]`, `source["id"]`.
 3. **Buffer**: Collects records in memory per stream.
 4. **Flush**: On state message or end-of-input:

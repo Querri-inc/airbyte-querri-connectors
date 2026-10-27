@@ -317,8 +317,8 @@ class TestPagination:
 
         assert len(streams) == 5
 
-    def test_sources_called_without_limit(self):
-        """streams() calls sources() without limit to get all pages."""
+    def test_sources_listed_at_max_page_size(self):
+        """streams() lists at the API's 100-per-page maximum; the SDK page auto-paginates."""
         source = SourceQuerri()
         config = {"api_key": "qk_test", "org_id": "org-1"}
 
@@ -328,8 +328,7 @@ class TestPagination:
         with patch.object(SourceQuerri, "_make_client", return_value=client):
             source.streams(config)
 
-        # Connector calls list() to get all sources
-        client.sources.list.assert_called_once_with()
+        client.sources.list.assert_called_once_with(limit=100)
 
 
 # ── Stream Schema ──
