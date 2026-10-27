@@ -1,10 +1,9 @@
 import sys
 
-from airbyte_cdk.entrypoint import launch
-
 from destination_querri import DestinationQuerri
 
 
 def run():
-    destination = DestinationQuerri()
-    launch(destination, sys.argv[1:])
+    # Destination.run, not airbyte_cdk.entrypoint.launch: launch is the SOURCE
+    # entrypoint, whose parser has no `write` command.
+    DestinationQuerri().run(sys.argv[1:])
