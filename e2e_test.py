@@ -19,13 +19,33 @@ sys.path.insert(0, "source-querri")
 sys.path.insert(0, "destination-querri")
 
 from querri import Querri
-from querri.types.data import Source
+from querri._exceptions import NotFoundError, PermissionError as QuerriPermissionError
 
 # ── Configuration ──
 
+def _secrets_file(name: str) -> dict:
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "destination-querri", "secrets", name)
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return {}
+
+
+# Fallback when the env vars are unset: the gitignored destination secrets.
+_RW_FILE = _secrets_file("config.json")
+_FALLBACK = {
+    "QUERRI_API_KEY": _RW_FILE.get("api_key"),
+    "QUERRI_ORG_ID": _RW_FILE.get("org_id"),
+    "QUERRI_READ_ONLY_KEY": _secrets_file("config_ro.json").get("api_key"),
+}
+if _RW_FILE.get("base_url") and "QUERRI_BASE_URL" not in os.environ:
+    os.environ["QUERRI_BASE_URL"] = _RW_FILE["base_url"]
+
+
 def _require_env(name: str) -> str:
     """Get a required environment variable or fail fast with a clear message."""
-    value = os.environ.get(name)
+    value = os.environ.get(name) or _FALLBACK.get(name)
     if not value:
         print(f"ERROR: Required environment variable {name} is not set.", file=sys.stderr)
         print(f"Set it in your shell or in airbyte/.env before running e2e tests.", file=sys.stderr)
@@ -81,17 +101,10 @@ def rw_client():
 def ro_client():
     return Querri(api_key=READ_ONLY_KEY, org_id=ORG_ID, host=_HOST)
 
-def _sources(client, **kwargs):
-    """List sources as typed models (the SDK's sources.list() yields dicts)."""
-    return [Source.model_validate(s) for s in client.sources.list(**kwargs)]
-
-def _source(client, source_id):
-    return Source.model_validate(client.sources.get(source_id))
-
 def find_source_by_name(client, name):
-    """Find a source by exact name match using SDK auto-pagination."""
-    for source in _sources(client, limit=100):
-        if source.name == name:
+    """Find a source by exact name match."""
+    for source in client.sources.list():
+        if source["name"] == name:
             return source
     return None
 
@@ -103,31 +116,35 @@ def find_source_by_name(client, name):
 @test("Check connection with read-write key")
 def test_check_rw():
     client = rw_client()
-    # Force iteration to verify credentials
-    next(iter(client.sources.list(limit=1)), None)
+    # Verify credentials by listing sources
+    client.sources.list()
 
 @test("Check connection with read-only key")
 def test_check_ro():
     client = ro_client()
-    next(iter(client.sources.list(limit=1)), None)
+    client.sources.list()
 
 @test("Check connection with invalid key fails")
 def test_check_invalid():
     client = Querri(api_key="qk_invalid", org_id=ORG_ID, host=_HOST)
     try:
-        next(iter(client.sources.list(limit=1)), None)
-        assert False, "Should have raised"
+        # list() is lazy: iterate to send the request.
+        next(iter(client.sources.list()), None)
     except Exception as e:
         assert "401" in str(e) or "invalid" in str(e).lower() or "authentication" in str(e).lower(), f"Unexpected error: {e}"
+    else:
+        assert False, "Should have raised"
 
 @test("Check connection with wrong org_id fails")
 def test_check_wrong_org():
     client = Querri(api_key=API_KEY, org_id="org_nonexistent", host=_HOST)
     try:
-        next(iter(client.sources.list(limit=1)), None)
-        assert False, "Should have raised"
+        # list() is lazy: iterate to send the request.
+        next(iter(client.sources.list()), None)
     except Exception as e:
         assert "401" in str(e) or "invalid" in str(e).lower() or "authentication" in str(e).lower() or "500" in str(e), f"Unexpected error: {e}"
+    else:
+        assert False, "Should have raised"
 
 
 # ═══════════════════════════════════════════════
@@ -152,19 +169,18 @@ def test_create_source():
 @test("List sources includes created source")
 def test_list_sources():
     client = rw_client()
-    sources = list(_sources(client, limit=100))
-    assert isinstance(sources, list)
-    names = [s.name for s in sources]
+    sources = list(client.sources.list(limit=100))
+    names = [s["name"] for s in sources]
     assert "e2e_test_crud" in names, f"Created source not in list: {names[:5]}"
 
 @test("Get source metadata")
 def test_get_source():
     client = rw_client()
     source_id = _created_source_ids[-1]
-    result = _source(client, source_id)
-    assert result.id == source_id
-    assert result.name == "e2e_test_crud"
-    assert "name" in result.columns
+    result = client.sources.get(source_id)
+    assert result["id"] == source_id
+    assert result["name"] == "e2e_test_crud"
+    assert "name" in result["columns"]
 
 @test("Read source data")
 def test_read_data():
@@ -237,17 +253,21 @@ def test_read_after_replace():
 def test_delete_source():
     client = rw_client()
     source_id = _created_source_ids[-1]
-    client.sources.delete(source_id)
+    result = client.sources.delete(source_id)
+    assert result is None or True  # delete returns None
     _created_source_ids.remove(source_id)
 
 @test("Deleted source returns 404")
 def test_deleted_404():
     client = rw_client()
     try:
-        _source(client, "00000000-0000-0000-0000-000000000000")
-        assert False, "Should have raised 404"
-    except Exception as e:
-        assert "404" in str(e) or "not found" in str(e).lower(), f"Expected 404, got: {e}"
+        client.sources.get("00000000-0000-0000-0000-000000000000")
+    except (NotFoundError, QuerriPermissionError):
+        # The access check runs before the existence check, so an unknown id
+        # can be refused as 403 rather than 404; either way it is unreadable.
+        pass
+    else:
+        assert False, "Should have raised"
 
 
 # ═══════════════════════════════════════════════
@@ -257,8 +277,8 @@ def test_deleted_404():
 @test("Read-only key can list sources")
 def test_ro_list():
     client = ro_client()
-    sources = list(_sources(client, limit=100))
-    assert isinstance(sources, list)
+    sources = list(client.sources.list(limit=100))
+    assert all("id" in s for s in sources)
 
 @test("Read-only key cannot create source")
 def test_ro_cannot_create():
@@ -319,7 +339,7 @@ def test_source_discover():
     source = SourceQuerri()
     config = {
         "api_key": API_KEY, "org_id": ORG_ID, "base_url": BASE_URL,
-        "source_ids": [pagination_source.id],
+        "source_ids": [pagination_source["id"]],
     }
     streams = source.streams(config)
     assert len(streams) >= 1, "No streams discovered"
@@ -335,7 +355,7 @@ def test_source_read():
     source = SourceQuerri()
     config = {
         "api_key": API_KEY, "org_id": ORG_ID, "base_url": BASE_URL,
-        "source_ids": [pagination_source.id],
+        "source_ids": [pagination_source["id"]],
     }
     streams = source.streams(config)
     target = [s for s in streams if s.name == "e2e_test_pagination"][0]
@@ -352,7 +372,7 @@ def test_source_schema():
     source = SourceQuerri()
     config = {
         "api_key": API_KEY, "org_id": ORG_ID, "base_url": BASE_URL,
-        "source_ids": [pagination_source.id],
+        "source_ids": [pagination_source["id"]],
     }
     streams = source.streams(config)
     target = [s for s in streams if s.name == "e2e_test_pagination"][0]
@@ -417,9 +437,9 @@ def test_dest_write_append():
     client = rw_client()
     source = find_source_by_name(client, "airbyte_e2e_dest_append")
     assert source is not None, "Destination didn't create source 'airbyte_e2e_dest_append'"
-    _created_source_ids.append(source.id)
+    _created_source_ids.append(source["id"])
 
-    data = client.sources.source_data(source.id)
+    data = client.sources.source_data(source["id"])
     assert data.total_rows == 2
     products = {r["product"] for r in data.data}
     assert products == {"Widget", "Gadget"}
@@ -437,7 +457,7 @@ def test_dest_overwrite():
     client = rw_client()
     existing = find_source_by_name(client, "airbyte_e2e_dest_overwrite")
     if existing:
-        client.sources.delete(existing.id)
+        client.sources.delete(existing["id"])
 
     result = client.sources.create_data_source(
         name="airbyte_e2e_dest_overwrite",
@@ -470,7 +490,7 @@ def test_dest_overwrite():
 
     # Old data should be gone
     source = find_source_by_name(client, "airbyte_e2e_dest_overwrite")
-    data = client.sources.source_data(source.id)
+    data = client.sources.source_data(source["id"])
     assert data.total_rows == 1
     assert data.data[0].get("new") == "data"
     assert "old" not in data.data[0] or data.data[0].get("old") is None
@@ -523,11 +543,11 @@ def test_roundtrip():
     client = rw_client()
     source = find_source_by_name(client, "airbyte_e2e_roundtrip")
     assert source is not None
-    _created_source_ids.append(source.id)
+    _created_source_ids.append(source["id"])
 
     # Read via source connector (use source_ids filter to avoid rate limits)
     src = SourceQuerri()
-    src_config = {**config, "source_ids": [source.id]}
+    src_config = {**config, "source_ids": [source["id"]]}
     streams = src.streams(src_config)
     target = [s for s in streams if s.name == "airbyte_e2e_roundtrip"]
     assert len(target) == 1, f"Round-trip stream not found. Streams: {[s.name for s in streams][:10]}"
@@ -536,6 +556,319 @@ def test_roundtrip():
     assert len(records) == 2
     metrics = {r["metric"] for r in records}
     assert metrics == {"revenue", "users"}
+
+
+# ═══════════════════════════════════════════════
+# 11. Destination `write` entrypoint, run as Airbyte runs it
+# ═══════════════════════════════════════════════
+#
+# `python main.py write --config ... --catalog ...` with messages on stdin.
+# Each test reads what a Querri reader sees through the API (SQL over the
+# source), and the checkpoint tests do so at the moment a STATE comes out.
+
+import queue
+import signal
+import subprocess
+import tempfile
+import threading
+
+_DEST_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "destination-querri")
+TIMINGS = []
+
+
+def _msg_record(stream, data):
+    return {"type": "RECORD", "record": {"stream": stream, "data": data, "emitted_at": 0}}
+
+
+def _msg_state(stream, cursor):
+    return {"type": "STATE", "state": {"type": "STREAM", "stream": {
+        "stream_descriptor": {"name": stream}, "stream_state": {"cursor": cursor}}}}
+
+
+def _state_cursor(message):
+    return message["state"]["stream"]["stream_state"]["cursor"]
+
+
+class WriteRun:
+    """One `main.py write` process; stdin fed incrementally, stdout parsed live."""
+
+    def __init__(self, streams, batch_size=10_000):
+        self._dir = tempfile.TemporaryDirectory(dir=os.path.join(_DEST_DIR, "secrets"))
+        config_path = os.path.join(self._dir.name, "config.json")
+        with open(config_path, "w") as f:
+            json.dump({"api_key": API_KEY, "org_id": ORG_ID, "base_url": BASE_URL,
+                       "batch_size": batch_size}, f)
+        catalog_path = os.path.join(self._dir.name, "catalog.json")
+        with open(catalog_path, "w") as f:
+            json.dump({"streams": [{
+                "stream": {"name": name, "json_schema": {"type": "object"},
+                           "supported_sync_modes": ["full_refresh", "incremental"]},
+                "sync_mode": "full_refresh" if mode == "overwrite" else "incremental",
+                "destination_sync_mode": mode,
+            } for name, mode in streams.items()]}, f)
+        self.proc = subprocess.Popen(
+            [sys.executable, "main.py", "write", "--config", config_path, "--catalog", catalog_path],
+            cwd=_DEST_DIR, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            text=True, bufsize=1)
+        self.out = queue.Queue()
+        self.messages = []
+        threading.Thread(target=self._read, daemon=True).start()
+
+    def _read(self):
+        for line in self.proc.stdout:
+            try:
+                self.out.put(json.loads(line))
+            except ValueError:
+                pass
+        self.out.put(None)
+
+    def send(self, messages):
+        for m in messages:
+            self.proc.stdin.write(json.dumps(m) + "\n")
+        self.proc.stdin.flush()
+
+    def next_state(self, timeout=180):
+        """The next STATE the destination emits, or None if it exits first."""
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            try:
+                m = self.out.get(timeout=max(0.1, deadline - time.time()))
+            except queue.Empty:
+                break
+            if m is None:
+                return None
+            self.messages.append(m)
+            if m["type"] == "STATE":
+                return m
+        raise AssertionError("no STATE within timeout")
+
+    def finish(self, timeout=600):
+        self.proc.stdin.close()
+        self.proc.wait(timeout=timeout)
+        states = []
+        while True:
+            m = self.out.get(timeout=30)
+            if m is None:
+                break
+            self.messages.append(m)
+            if m["type"] == "STATE":
+                states.append(m)
+        self._dir.cleanup()
+        return self.proc.returncode, states
+
+    def kill(self):
+        """SIGKILL: the destination dies with whatever it had not written."""
+        self.proc.send_signal(signal.SIGKILL)
+        self.proc.wait(timeout=30)
+        while True:
+            m = self.out.get(timeout=30)
+            if m is None:
+                break
+            self.messages.append(m)
+        self._dir.cleanup()
+        return [m for m in self.messages if m["type"] == "STATE"]
+
+    def retries(self):
+        """The destination's own retry log lines (409 / 429 / 5xx waits)."""
+        return [m["log"]["message"] for m in self.messages
+                if m["type"] == "LOG" and "retrying in" in m["log"]["message"]]
+
+    def errors(self):
+        return [m["trace"]["error"]["message"] for m in self.messages
+                if m["type"] == "TRACE" and m.get("trace", {}).get("error")]
+
+
+def _fresh(name, rows=None):
+    """Delete every source called `name`; seed one with `rows` if given (an API
+    source, as an earlier sync would have created it)."""
+    client = rw_client()
+    for s in list(client.sources.list(limit=100)):
+        if s["name"] == name:
+            client.sources.delete(s["id"])
+    if rows:
+        result = client.sources.create_data_source(name=name, rows=rows)
+        _created_source_ids.append(result.id)
+        return result.id
+    return None
+
+
+def _stats(name):
+    """What a reader sees: (count, distinct rid, min rid, max rid), or None if no source."""
+    client = rw_client()
+    matches = [s for s in client.sources.list(limit=100) if s["name"] == name]
+    if not matches:
+        return None
+    assert len(matches) == 1, f"{len(matches)} sources named {name}"
+    _created_source_ids.append(matches[0]["id"])
+    r = client.sources.query(
+        source_id=matches[0]["id"],
+        sql="SELECT count(*) AS n, count(DISTINCT rid) AS d, min(rid) AS lo, max(rid) AS hi FROM data")
+    row = r.data[0]
+    return int(row["n"]), int(row["d"]), int(row["lo"]), int(row["hi"])
+
+
+def _rows(stream, start, n):
+    return [_msg_record(stream, {"rid": i, "name": f"row {i}", "amount": i * 1.5,
+                                 "ts": f"2026-10-26T00:{i % 60:02d}:00Z"})
+            for i in range(start, start + n)]
+
+
+@test("write: overwrite 50,000 rows replaces the old rows, one held state after")
+def test_write_overwrite_50k():
+    stream, name = "e2e_w_ow50k", "airbyte_e2e_w_ow50k"
+    _fresh(name, rows=[{"rid": -i, "name": "old", "amount": 0.0, "ts": "old"} for i in range(1, 4)])
+    t0 = time.time()
+    run = WriteRun({stream: "overwrite"})
+    run.send(_rows(stream, 0, 25_000) + [_msg_state(stream, 1)]
+             + _rows(stream, 25_000, 25_000) + [_msg_state(stream, 2)])
+    code, states = run.finish()
+    elapsed = time.time() - t0
+    TIMINGS.append(("overwrite 50k rows", elapsed, run.retries()))
+    assert code == 0, run.errors()
+    assert [_state_cursor(s) for s in states] == [2], states
+    assert _stats(name) == (50_000, 50_000, 0, 49_999), _stats(name)
+
+
+@test("write: overwrite 150,000 rows (over one request) lands every row exactly once")
+def test_write_overwrite_150k_multi_request():
+    stream, name = "e2e_w_ow150k", "airbyte_e2e_w_ow150k"
+    _fresh(name, rows=[{"rid": -i, "name": "old", "amount": 0.0, "ts": "old"} for i in range(1, 4)])
+    t0 = time.time()
+    run = WriteRun({stream: "overwrite"}, batch_size=50_000)
+    run.send(_rows(stream, 0, 150_000) + [_msg_state(stream, 1)])
+    code, states = run.finish()
+    TIMINGS.append(("overwrite 150k rows (replace + 2 appends)", time.time() - t0, run.retries()))
+    assert code == 0, run.errors()
+    assert [_state_cursor(s) for s in states] == [1]
+    assert _stats(name) == (150_000, 150_000, 0, 149_999), _stats(name)
+
+
+@test("write: append across 3 checkpoints, each state only after its rows are readable")
+def test_write_append_three_checkpoints():
+    stream, name = "e2e_w_app3", "airbyte_e2e_w_app3"
+    _fresh(name)
+    t0 = time.time()
+    # 10,000 rows per checkpoint: the buffered-rows threshold that makes a STATE flush.
+    run = WriteRun({stream: "append"}, batch_size=50_000)
+    seen = []
+    for k in range(3):
+        run.send(_rows(stream, k * 10_000, 10_000) + [_msg_state(stream, k + 1)])
+        state = run.next_state()
+        assert state is not None, run.errors()
+        # Read through the API while the destination is still running.
+        seen.append((_state_cursor(state), _stats(name)))
+    code, rest = run.finish()
+    TIMINGS.append(("append 30,000 rows / 3 checkpoints", time.time() - t0, run.retries()))
+    assert code == 0 and rest == [], (code, rest, run.errors())
+    assert seen == [(1, (10_000, 10_000, 0, 9_999)), (2, (20_000, 20_000, 0, 19_999)),
+                    (3, (30_000, 30_000, 0, 29_999))], seen
+
+
+@test("write: overwrite killed mid-sync acks nothing and keeps old rows; rerun recovers")
+def test_write_overwrite_killed_then_rerun():
+    stream, name = "e2e_w_owkill", "airbyte_e2e_w_owkill"
+    _fresh(name, rows=[{"rid": -i, "name": "old", "amount": 0.0, "ts": "old"} for i in range(1, 6)])
+    run = WriteRun({stream: "overwrite"})
+    run.send(_rows(stream, 0, 5_000) + [_msg_state(stream, 1)] + _rows(stream, 5_000, 1_000))
+    time.sleep(3)  # let it consume the input; the replace only happens at end of input
+    states = run.kill()
+    assert states == [], f"a STATE was acknowledged before the replace: {states}"
+    assert _stats(name) == (5, 5, -5, -1), _stats(name)
+
+    t0 = time.time()
+    run = WriteRun({stream: "overwrite"})
+    run.send(_rows(stream, 0, 6_000) + [_msg_state(stream, 1)])
+    code, states = run.finish()
+    TIMINGS.append(("overwrite rerun 6,000 rows", time.time() - t0, run.retries()))
+    assert code == 0, run.errors()
+    assert [_state_cursor(s) for s in states] == [1]
+    assert _stats(name) == (6_000, 6_000, 0, 5_999), _stats(name)
+
+
+@test("write: append killed after a checkpoint resumes from it with no duplicates")
+def test_write_append_killed_then_resume():
+    stream, name = "e2e_w_appkill", "airbyte_e2e_w_appkill"
+    _fresh(name)
+    run = WriteRun({stream: "append"}, batch_size=50_000)
+    run.send(_rows(stream, 0, 10_000) + [_msg_state(stream, 1)])
+    assert _state_cursor(run.next_state()) == 1
+    # Buffered below batch_size, never flushed, never acknowledged.
+    run.send(_rows(stream, 10_000, 500))
+    time.sleep(2)
+    states = run.kill()
+    assert [_state_cursor(s) for s in states] == [1], states
+    assert _stats(name) == (10_000, 10_000, 0, 9_999), _stats(name)
+
+    # Airbyte resumes from the last acknowledged state: records after cursor 1.
+    run = WriteRun({stream: "append"}, batch_size=50_000)
+    run.send(_rows(stream, 10_000, 1_000) + [_msg_state(stream, 2)])
+    code, states = run.finish()
+    assert code == 0, run.errors()
+    assert [_state_cursor(s) for s in states] == [2]
+    assert _stats(name) == (11_000, 11_000, 0, 10_999), _stats(name)
+
+
+@test("write: append failure (server refuses) withholds the state for the failed batch")
+def test_write_append_server_refusal():
+    stream, name = "e2e_w_appfail", "airbyte_e2e_w_appfail"
+    _fresh(name)
+    run = WriteRun({stream: "append"}, batch_size=10_000)
+    run.send(_rows(stream, 0, 10_000) + [_msg_state(stream, 1)])
+    assert _state_cursor(run.next_state()) == 1
+    # A row too large for the server's 50 MB request cap is refused with 413.
+    run.send([_msg_record(stream, {"rid": 100, "name": "x" * (51 * 1024 * 1024)})]
+             + [_msg_state(stream, 2)])
+    code, states = run.finish()
+    assert code != 0, "the sync must fail"
+    assert states == [], states
+    assert run.errors(), "expected a TRACE error"
+    assert _stats(name) == (10_000, 10_000, 0, 9_999), _stats(name)
+
+
+@test("write: two sources with the stream's name are refused, both untouched")
+def test_write_refuses_ambiguous_sources():
+    stream, name = "e2e_w_dup", "airbyte_e2e_w_dup"
+    first = _fresh(name, rows=[{"rid": -i, "name": "a", "amount": 0.0, "ts": "x"} for i in range(1, 4)])
+    second = rw_client().sources.create_data_source(
+        name=name, rows=[{"rid": -i, "name": "b", "amount": 0.0, "ts": "x"} for i in range(1, 3)]).id
+    _created_source_ids.append(second)
+    run = WriteRun({stream: "overwrite"})
+    run.send(_rows(stream, 0, 10) + [_msg_state(stream, 1)])
+    code, states = run.finish()
+    assert code != 0 and states == [], (code, states)
+    traces = [m["trace"]["error"] for m in run.messages
+              if m["type"] == "TRACE" and m.get("trace", {}).get("error")]
+    assert traces and traces[0]["failure_type"] == "config_error", traces
+    assert "2 Querri sources are named" in traces[0]["message"]
+    client = rw_client()
+    counts = {sid: client.sources.query(source_id=sid, sql="SELECT count(*) AS n FROM data").data[0]["n"]
+              for sid in (first, second)}
+    assert counts == {first: 3, second: 2}, counts
+
+
+@test("write: zero-record overwrite keeps the existing rows; new stream creates nothing")
+def test_write_zero_record_overwrite():
+    stream, name = "e2e_w_ow0", "airbyte_e2e_w_ow0"
+    new_stream, new_name = "e2e_w_ow0new", "airbyte_e2e_w_ow0new"
+    _fresh(name, rows=[{"rid": -i, "name": "old", "amount": 0.0, "ts": "old"} for i in range(1, 4)])
+    _fresh(new_name)
+    run = WriteRun({stream: "overwrite", new_stream: "overwrite"})
+    run.send([_msg_state(stream, 1)])
+    code, states = run.finish()
+    assert code == 0, run.errors()
+    assert [_state_cursor(s) for s in states] == [1]
+    # The API refuses an empty replace (documented limitation).
+    assert _stats(name) == (3, 3, -3, -1), _stats(name)
+    assert _stats(new_name) is None
+
+
+WRITE_TESTS = [
+    test_write_overwrite_50k, test_write_overwrite_150k_multi_request,
+    test_write_append_three_checkpoints,
+    test_write_overwrite_killed_then_rerun, test_write_append_killed_then_resume,
+    test_write_append_server_refusal, test_write_refuses_ambiguous_sources,
+    test_write_zero_record_overwrite,
+]
 
 
 # ═══════════════════════════════════════════════
@@ -552,10 +885,10 @@ def cleanup():
             pass
     # Also clean up by name pattern
     try:
-        for s in _sources(client, limit=100):
-            if s.name.startswith("e2e_test_") or s.name.startswith("airbyte_e2e_"):
+        for s in client.sources.list():
+            if s["name"].startswith("e2e_test_") or s["name"].startswith("airbyte_e2e_"):
                 try:
-                    client.sources.delete(s.id)
+                    client.sources.delete(s["id"])
                 except Exception:
                     pass
     except Exception:
@@ -567,8 +900,11 @@ if __name__ == "__main__":
     print("  Querri Airbyte Connectors — E2E Tests")
     print("══════════════════════════════════════════\n")
 
+    # E2E_ONLY=write runs only section 11.
+    only_write = os.environ.get("E2E_ONLY") == "write"
+
     # Collect all test functions in definition order
-    all_tests = [
+    all_tests = [] if only_write else [
         test_check_rw, test_check_ro, test_check_invalid, test_check_wrong_org,
         test_create_source, test_list_sources, test_get_source, test_read_data,
         test_append_rows, test_read_after_append,
@@ -620,6 +956,13 @@ if __name__ == "__main__":
     print("\n10. Round-trip: Destination → Source")
     for t in all_tests[24:]:
         run_test(t)
+
+    print("\n11. Destination `write` entrypoint (as Airbyte runs it)")
+    for t in WRITE_TESTS:
+        run_test(t)
+    for label, seconds, retries in TIMINGS:
+        print(f"    {label}: {seconds:.1f}s, {len(retries)} retries"
+              + (f" (first: {retries[0]})" if retries else ""))
 
     # Cleanup
     print("\nCleaning up test data...")

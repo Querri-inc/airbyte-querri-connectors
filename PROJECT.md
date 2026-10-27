@@ -64,7 +64,7 @@ This changes the critical path: SDK bug fixes (D3, D4) must land before the conn
 ### 1.1 Fix SDK `Source` model — add `column_types` field
 - **Status**: DONE (2026-04-03T14:15)
 - **Files**: `querri-python-sdk/querri/types/data.py`
-- **Task**: The API's `GET /data/sources/{id}` returns `column_types` (dict mapping column names to types). The SDK's `Source` Pydantic model does not include this field. Add it.
+- **Task**: The API's `GET /sources/{id}` returns `column_types` (dict mapping column names to types). The SDK's `Source` Pydantic model does not include this field. Add it.
 - **Acceptance criteria**: `Source` model includes `column_types: Optional[Dict[str, str]]`. SDK correctly parses the field from API responses.
 - **Effort**: Small
 

@@ -60,14 +60,14 @@ QUERRI_API_KEY=qk_... QUERRI_READ_ONLY_KEY=qk_... QUERRI_ORG_ID=org_... python e
 ### Source Connector Flow
 
 1. **Check**: `client.sources.list(limit=1)` — verifies credentials.
-2. **Discover**: `client.sources.list()` auto-paginates all sources. For each, calls `client.sources.get(id)` to get `column_types` for JSON schema generation.
+2. **Discover**: `client.sources.list(limit=100)` auto-paginates all sources as dicts. For each, calls `client.sources.get(id)` to get `column_types` for JSON schema generation. Both return dicts (access via `source["id"]`, `source["name"]`).
 3. **Read**: `QuerriSourceStream.read_records()` paginates through `client.sources.source_data()` in 10k-row pages. Enriches each row with `_querri_source_id` and `_querri_source_name`.
 4. **Incremental**: Tracks `updated_at` cursor per source. Skips unchanged sources.
 
 ### Destination Connector Flow
 
 1. **Check**: `client.sources.list(limit=1)` — verifies credentials.
-2. **Resolve**: Maps each Airbyte stream to an existing Querri source by name (`airbyte_` prefix).
+2. **Resolve**: Maps each Airbyte stream to an existing Querri source by name (`airbyte_` prefix). `list()` returns `List[Dict]` — access via `source["name"]`, `source["id"]`.
 3. **Buffer**: Collects records in memory per stream.
 4. **Flush**: On state message or end-of-input:
    - **Append mode**: `client.sources.append_rows()` in batches of 10k.
@@ -78,8 +78,8 @@ QUERRI_API_KEY=qk_... QUERRI_READ_ONLY_KEY=qk_... QUERRI_ORG_ID=org_... python e
 
 The connectors use `from querri import Querri` with:
 - `host` parameter (SDK appends `/api/v1`): strip suffix from Airbyte's `base_url` config.
-- Auto-paginating `client.sources.list()`.
-- Typed models: `DataWriteResult`, `DataPage` (list/get return dicts, wrapped in `Source`).
+- All methods via `client.sources.*` (the `client.data` namespace no longer exists).
+- `list()` and `get()` return plain dicts (access via `["key"]`). `create_data_source()`, `source_data()`, `append_rows()`, `replace_data()` still return Pydantic models (`Source`, `DataPage`, `DataWriteResult`).
 - Built-in retry: 429 with Retry-After, 5xx with exponential backoff (3 retries default).
 - Typed exceptions: `AuthenticationError`, `PermissionError`, `RateLimitError`, `NotFoundError`.
 
@@ -95,9 +95,6 @@ The connectors use `from querri import Querri` with:
 | `PUT /sources/{id}/data` | `client.sources.replace_data()` | Destination (overwrite mode) |
 | `DELETE /sources/{id}` | `client.sources.delete()` | E2E tests (cleanup) |
 
-`client.sources.list()` and `.get()` return plain dicts; the connectors wrap them in
-`querri.types.data.Source` so the rest of the code keeps attribute access.
-
 ## Common Tasks
 
 ### Adding a new stream type
@@ -108,7 +105,7 @@ The connectors use `from querri import Querri` with:
 
 ### Adding a new API endpoint to the SDK
 
-Follow `querri-python-sdk/CLAUDE.md` — add types in `types/data.py`, methods in both `Sources` and `AsyncSources` classes in `resources/sources.py`.
+Follow `querri-python-sdk/CLAUDE.md` — add types in `types/data.py`, methods in both `Data` and `AsyncData` classes in `resources/data.py`.
 
 ## Known Limitations
 

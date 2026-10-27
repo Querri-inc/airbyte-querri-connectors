@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from querri.types.data import DataPage, Source
+from querri.types.data import DataPage
 from querri._exceptions import (
     AuthenticationError,
     NotFoundError,
@@ -28,9 +28,9 @@ def _mock_client(**overrides):
     """Create a MagicMock Querri SDK client with sensible defaults."""
     client = MagicMock()
     client.sources.list.return_value = []
-    client.sources.get.return_value = Source(
-        id="src-1", name="Test", columns=["col"], row_count=0
-    )
+    client.sources.get.return_value = {
+        "id": "src-1", "name": "Test", "columns": ["col"], "row_count": 0,
+    }
     client.sources.source_data.return_value = DataPage(data=[], total_rows=0)
     for k, v in overrides.items():
         attr = getattr(client.sources, k, None)
@@ -42,18 +42,22 @@ def _mock_client(**overrides):
     return client
 
 
-def _source(id="src-1", name="Test", columns=None, column_types=None,
-            row_count=0, updated_at=None, access_controlled=None):
-    """Build a Source model for mocking."""
-    return Source(
-        id=id,
-        name=name,
-        columns=columns or [],
-        column_types=column_types,
-        row_count=row_count,
-        updated_at=updated_at,
-        access_controlled=access_controlled,
-    )
+def _source_dict(id="src-1", name="Test", columns=None, column_types=None,
+                 row_count=0, updated_at=None, access_controlled=None):
+    """Build a source dict for mocking list()/get() responses."""
+    d = {
+        "id": id,
+        "name": name,
+        "columns": columns or [],
+        "row_count": row_count,
+    }
+    if column_types is not None:
+        d["column_types"] = column_types
+    if updated_at is not None:
+        d["updated_at"] = updated_at
+    if access_controlled is not None:
+        d["access_controlled"] = access_controlled
+    return d
 
 
 def _stream(client=None, source_id="src-1", source_name="Test",
@@ -113,7 +117,7 @@ class TestSourceConnectionCheck:
 
         assert ok is True
         assert err is None
-        client.sources.list.assert_called_once_with(limit=1)
+        client.sources.list.assert_called_once()
 
     def test_check_auth_failure(self):
         source = SourceQuerri()
@@ -153,15 +157,15 @@ class TestStreamDiscovery:
         config = {"api_key": "qk_test", "org_id": "org-1"}
 
         mock_sources = [
-            _source(id="src-1", name="Contacts", columns=["name"]),
-            _source(id="src-2", name="Deals", columns=["amount"]),
+            _source_dict(id="src-1", name="Contacts", columns=["name"]),
+            _source_dict(id="src-2", name="Deals", columns=["amount"]),
         ]
-        schema_1 = _source(
+        schema_1 = _source_dict(
             id="src-1", name="Contacts", columns=["name", "email"],
             column_types={"name": "string", "email": "string"},
             row_count=10, updated_at="2026-01-01T00:00:00",
         )
-        schema_2 = _source(
+        schema_2 = _source_dict(
             id="src-2", name="Deals", columns=["amount", "stage"],
             column_types={"amount": "number", "stage": "string"},
             row_count=5, updated_at="2026-01-02T00:00:00",
@@ -194,10 +198,10 @@ class TestStreamDiscovery:
         config = {"api_key": "qk_test", "org_id": "org-1", "source_ids": ["src-1"]}
 
         mock_sources = [
-            _source(id="src-1", name="Contacts"),
-            _source(id="src-2", name="Deals"),
+            _source_dict(id="src-1", name="Contacts"),
+            _source_dict(id="src-2", name="Deals"),
         ]
-        schema = _source(
+        schema = _source_dict(
             id="src-1", name="Contacts", columns=["name"],
             column_types={"name": "string"}, row_count=10,
         )
@@ -222,7 +226,7 @@ class TestStreamDiscovery:
 
         client = _mock_client()
         client.sources.list.return_value = [
-            _source(id="src-1", name="Contacts"),
+            _source_dict(id="src-1", name="Contacts"),
         ]
 
         with patch.object(SourceQuerri, "_make_client", return_value=client):
@@ -237,15 +241,15 @@ class TestStreamDiscovery:
         config = {"api_key": "qk_test", "org_id": "org-1"}
 
         mock_sources = [
-            _source(id="src-1", name="Good"),
-            _source(id="src-2", name="Bad"),
-            _source(id="src-3", name="Also Good"),
+            _source_dict(id="src-1", name="Good"),
+            _source_dict(id="src-2", name="Bad"),
+            _source_dict(id="src-3", name="Also Good"),
         ]
-        schema_1 = _source(
+        schema_1 = _source_dict(
             id="src-1", name="Good", columns=["a"],
             column_types={"a": "string"}, row_count=1,
         )
-        schema_3 = _source(
+        schema_3 = _source_dict(
             id="src-3", name="Also Good", columns=["b"],
             column_types={"b": "integer"}, row_count=2,
         )
@@ -272,9 +276,9 @@ class TestStreamDiscovery:
 
         client = _mock_client()
         client.sources.list.return_value = [
-            _source(id="src-1", name="NoTypes"),
+            _source_dict(id="src-1", name="NoTypes"),
         ]
-        client.sources.get.return_value = _source(
+        client.sources.get.return_value = _source_dict(
             id="src-1", name="NoTypes", columns=["a", "b"],
             column_types=None, row_count=5,
         )
@@ -297,9 +301,9 @@ class TestPagination:
         source = SourceQuerri()
         config = {"api_key": "qk_test", "org_id": "org-1"}
 
-        sources = [_source(id=f"src-{i}", name=f"S{i}") for i in range(5)]
+        sources = [_source_dict(id=f"src-{i}", name=f"S{i}") for i in range(5)]
         schemas = [
-            _source(id=f"src-{i}", name=f"S{i}", columns=["x"],
+            _source_dict(id=f"src-{i}", name=f"S{i}", columns=["x"],
                     column_types={"x": "string"})
             for i in range(5)
         ]
@@ -313,8 +317,8 @@ class TestPagination:
 
         assert len(streams) == 5
 
-    def test_sources_called_without_limit(self):
-        """streams() calls sources() without limit to get all pages."""
+    def test_sources_listed_at_max_page_size(self):
+        """streams() lists at the API's 100-per-page maximum; the SDK page auto-paginates."""
         source = SourceQuerri()
         config = {"api_key": "qk_test", "org_id": "org-1"}
 
@@ -324,7 +328,6 @@ class TestPagination:
         with patch.object(SourceQuerri, "_make_client", return_value=client):
             source.streams(config)
 
-        # Connector calls sources() with no limit arg to get all pages
         client.sources.list.assert_called_once_with(limit=100)
 
 
@@ -410,7 +413,7 @@ class TestStreamReading:
                 total_rows=15, page=2, page_size=10,
             ),
         ]
-        client.sources.get.return_value = _source(updated_at="2026-03-08T00:00:00")
+        client.sources.get.return_value = _source_dict(updated_at="2026-03-08T00:00:00")
 
         stream = _stream(
             client=client, columns=["name"], column_types={"name": "string"},
@@ -422,12 +425,12 @@ class TestStreamReading:
         assert records[0]["_querri_source_id"] == "src-1"
         assert records[0]["_querri_source_name"] == "Test"
 
-    def test_reads_empty_source(self):
+    def test_reads_empty_source_dict(self):
         client = _mock_client()
         client.sources.source_data.return_value = DataPage(
             data=[], total_rows=0, page=1, page_size=PAGE_SIZE,
         )
-        client.sources.get.return_value = _source(updated_at=None)
+        client.sources.get.return_value = _source_dict(updated_at=None)
 
         stream = _stream(client=client, row_count=0)
         records = list(stream.read_records(sync_mode="full_refresh"))
@@ -438,7 +441,7 @@ class TestStreamReading:
         client.sources.source_data.side_effect = [
             DataPage(data=[{"v": i} for i in range(3)], total_rows=3, page=1, page_size=PAGE_SIZE),
         ]
-        client.sources.get.return_value = _source(updated_at="2026-01-01T00:00:00")
+        client.sources.get.return_value = _source_dict(updated_at="2026-01-01T00:00:00")
 
         stream = _stream(client=client, columns=["v"], row_count=3)
         records = list(stream.read_records(sync_mode="full_refresh"))
@@ -451,7 +454,7 @@ class TestStreamReading:
             DataPage(data=[{"v": i} for i in range(10)], total_rows=20, page=1, page_size=10),
             ServerError("Connection reset", status=502),
         ]
-        client.sources.get.return_value = _source(updated_at="2026-01-01T00:00:00")
+        client.sources.get.return_value = _source_dict(updated_at="2026-01-01T00:00:00")
 
         stream = _stream(client=client, columns=["v"], row_count=20)
         records = list(stream.read_records(sync_mode="full_refresh"))
@@ -463,7 +466,7 @@ class TestStreamReading:
         client.sources.source_data.return_value = DataPage(
             data=[{"col": "val"}], total_rows=1, page=1, page_size=PAGE_SIZE,
         )
-        client.sources.get.return_value = _source(updated_at="2026-01-01T00:00:00")
+        client.sources.get.return_value = _source_dict(updated_at="2026-01-01T00:00:00")
 
         stream = _stream(
             client=client, source_id="src-42", source_name="My Source",
@@ -478,9 +481,9 @@ class TestStreamReading:
 
 
 class TestIncrementalSync:
-    def test_skips_unchanged_source(self):
+    def test_skips_unchanged_source_dict(self):
         client = _mock_client()
-        client.sources.get.return_value = _source(updated_at="2026-01-01T00:00:00")
+        client.sources.get.return_value = _source_dict(updated_at="2026-01-01T00:00:00")
 
         stream = _stream(client=client)
         stream.state = {"updated_at": "2026-06-01T00:00:00"}
@@ -497,7 +500,7 @@ class TestIncrementalSync:
         client = _mock_client()
         # First call: incremental check returns newer timestamp
         # Second call: after reading, update cursor
-        client.sources.get.return_value = _source(updated_at="2026-07-01T00:00:00")
+        client.sources.get.return_value = _source_dict(updated_at="2026-07-01T00:00:00")
         client.sources.source_data.return_value = DataPage(
             data=[{"v": 1}], total_rows=1, page=1, page_size=PAGE_SIZE,
         )
@@ -514,7 +517,7 @@ class TestIncrementalSync:
     def test_equal_timestamps_skip(self):
         """Equal updated_at means no change — skip (uses <=)."""
         client = _mock_client()
-        client.sources.get.return_value = _source(updated_at="2026-06-01T00:00:00")
+        client.sources.get.return_value = _source_dict(updated_at="2026-06-01T00:00:00")
 
         stream = _stream(client=client)
         stream.state = {"updated_at": "2026-06-01T00:00:00"}
@@ -531,7 +534,7 @@ class TestIncrementalSync:
         client.sources.source_data.return_value = DataPage(
             data=[{"v": 1}], total_rows=1, page=1, page_size=PAGE_SIZE,
         )
-        client.sources.get.return_value = _source(updated_at="2026-01-01T00:00:00")
+        client.sources.get.return_value = _source_dict(updated_at="2026-01-01T00:00:00")
 
         stream = _stream(client=client, columns=["v"], row_count=1)
         # No state set — cursor_value is None
@@ -548,7 +551,7 @@ class TestIncrementalSync:
         client.sources.source_data.return_value = DataPage(
             data=[{"v": 1}], total_rows=1, page=1, page_size=PAGE_SIZE,
         )
-        client.sources.get.return_value = _source(updated_at="2026-07-15T12:00:00")
+        client.sources.get.return_value = _source_dict(updated_at="2026-07-15T12:00:00")
 
         stream = _stream(client=client, columns=["v"], row_count=1)
 
@@ -629,7 +632,7 @@ class TestErrorHandling:
         client.sources.source_data.side_effect = NotFoundError(
             "Source not found", status=404
         )
-        client.sources.get.return_value = _source(updated_at=None)
+        client.sources.get.return_value = _source_dict(updated_at=None)
 
         stream = _stream(client=client, row_count=10)
         records = list(stream.read_records(sync_mode="full_refresh"))

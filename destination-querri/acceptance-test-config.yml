@@ -1,4 +1,4 @@
-connector_image: airbyte/destination-querri:dev
+connector_image: ghcr.io/querri-inc/destination-querri:dev
 test_strictness_level: low
 acceptance_tests:
   spec:

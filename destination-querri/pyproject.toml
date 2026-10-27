@@ -1,10 +1,9 @@
 [tool.poetry]
 name = "destination-querri"
-version = "0.1.0"
+version = "0.2.0"
 description = "Airbyte destination connector for Querri"
 authors = ["Querri Inc."]
 license = "MIT"
-readme = "README.md"
 packages = [
     { include = "destination_querri" },
 ]
@@ -12,7 +11,7 @@ packages = [
 [tool.poetry.dependencies]
 python = ">=3.10,<3.14"
 airbyte-cdk = "^7.0"
-querri = { path = "../../querri-python-sdk", develop = true }
+querri = ">=2.1.0,<3"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0"

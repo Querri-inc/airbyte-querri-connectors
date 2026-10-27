@@ -134,7 +134,7 @@ This is safe because:
 
 These are the API response shapes the connectors must handle. All responses from the actual Querri server API (`Querri/server-api/api/public_api/`).
 
-### 4.1 GET /data/sources (list)
+### 4.1 GET /sources (list)
 
 ```json
 {
@@ -146,7 +146,7 @@ These are the API response shapes the connectors must handle. All responses from
 
 Pagination: cursor-based, default limit 20, max limit 100. Pass `after=<cursor>` for next page.
 
-### 4.2 GET /data/sources/{id} (detail)
+### 4.2 GET /sources/{id} (detail)
 
 ```json
 {"id": "...", "name": "...", "columns": [...], "column_types": {"col": "type"}, "row_count": N, "access_controlled": bool, "updated_at": "..."}
@@ -154,7 +154,7 @@ Pagination: cursor-based, default limit 20, max limit 100. Pass `after=<cursor>`
 
 **Note**: `column_types` is only on the detail endpoint, not the list endpoint. The source connector correctly calls `get_source()` per source to get column types for schema generation.
 
-### 4.3 GET /data/sources/{id}/data (read)
+### 4.3 GET /sources/{id}/data (read)
 
 ```json
 {"data": [{...}], "total_rows": N, "page": N, "page_size": N}
@@ -162,19 +162,19 @@ Pagination: cursor-based, default limit 20, max limit 100. Pass `after=<cursor>`
 
 Offset-paginated (page/page_size). The connector's `read_source_data()` handles this correctly.
 
-### 4.4 POST /data/sources (create)
+### 4.4 POST /sources (create)
 
 ```json
 {"id": "...", "name": "...", "columns": [...], "row_count": N, "updated_at": "..."}
 ```
 
-### 4.5 POST /data/sources/{id}/rows (append), PUT /data/sources/{id}/data (replace)
+### 4.5 POST /sources/{id}/rows (append), PUT /sources/{id}/data (replace)
 
 ```json
 {"id": "...", "name": "...", "columns": [...], "row_count": N, "updated_at": "..."}
 ```
 
-### 4.6 DELETE /data/sources/{id}
+### 4.6 DELETE /sources/{id}
 
 ```json
 {"id": "...", "deleted": true}

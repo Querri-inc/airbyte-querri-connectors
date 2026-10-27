@@ -1,8 +1,8 @@
 data:
   connectorType: destination
-  definitionId: "b4c3d2e1-f6a7-4b89-0c1d-2e3f4a5b6789"
-  dockerImageTag: 0.1.0
-  dockerRepository: airbyte/destination-querri
+  definitionId: "fce14aa6-51ec-4d11-95f4-ec058b845730"
+  dockerImageTag: 0.2.0
+  dockerRepository: ghcr.io/querri-inc/destination-querri
   name: "Querri"
   connectorSubtype: api
   license: MIT
@@ -16,9 +16,10 @@ data:
       enabled: true
   remoteRegistries:
     pypi:
-      enabled: true
+      # Not published to PyPI yet; distribution is the GHCR image.
+      enabled: false
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:3.0.0
+    baseImage: docker.io/airbyte/python-connector-base:4.1.0@sha256:1d1aa21d34e851df4e8a87b391c27724c06e2597608e7161f4d167be853bd7b6
   allowedHosts:
     hosts:
       - "app.querri.com"

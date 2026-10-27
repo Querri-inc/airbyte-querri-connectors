@@ -72,7 +72,7 @@ You are free to to work on the SDK _and_ the public API in ../Querri as well. Yo
 
 **Status**: DECIDED — IN SCOPE (D2 approved, 2026-04-03)
 
-**Context**: The API's `GET /data/sources/{id}` returns `column_types` (a dict mapping column names to types like `"string"`, `"integer"`, etc.). The SDK's `Source` Pydantic model does not include this field. The connector relies on `column_types` for Airbyte JSON schema generation.
+**Context**: The API's `GET /sources/{id}` returns `column_types` (a dict mapping column names to types like `"string"`, `"integer"`, etc.). The SDK's `Source` Pydantic model does not include this field. The connector relies on `column_types` for Airbyte JSON schema generation.
 
 **File**: `querri-python-sdk/querri/types/data.py`, line 10-17
 

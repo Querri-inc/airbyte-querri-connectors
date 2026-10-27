@@ -34,18 +34,14 @@ Airbyte's **Partner Certified** program is the most viable route for destination
 Users can add custom connectors to their Airbyte instances today without marketplace approval. This gives us immediate distribution.
 
 **Action Items:**
-1. **Publish Docker images** — Build and push to Docker Hub or GitHub Container Registry:
-   ```bash
-   docker build -t querri/source-querri:0.1.0 source-querri/
-   docker build -t querri/destination-querri:0.1.0 destination-querri/
-   docker push querri/source-querri:0.1.0
-   docker push querri/destination-querri:0.1.0
-   ```
-   Note: We removed Dockerfiles for registry compliance. Re-create minimal Dockerfiles for custom distribution, or use `airbyte-ci` to build from metadata.yaml.
+1. **Publish Docker images**: the destination has a Dockerfile and a GHCR workflow
+   (`.github/workflows/publish-destination-querri.yml`). Push a tag
+   `destination-querri-v<version>` (matching pyproject.toml, metadata.yaml and the Dockerfile
+   label) and it builds amd64 + arm64 and pushes `ghcr.io/querri-inc/destination-querri`.
+   Make the GHCR package public after the first push, or customers cannot pull it.
+   The source connector still needs the same.
 
-2. **Write a "Custom Connector" setup guide** — Airbyte Cloud and OSS both support adding custom Docker-based connectors. Document the process:
-   - OSS: Settings → Sources/Destinations → New Connector → Docker image name + tag
-   - Cloud: Admin panel → Custom Connectors → Add
+2. **Custom connector setup guide**: `docs/destination-querri-setup.md`.
 
 3. **Publish to PyPI** — This enables PyAirbyte users to `pip install source-querri destination-querri` directly. The `remoteRegistries.pypi.enabled: true` metadata is already in place.
 

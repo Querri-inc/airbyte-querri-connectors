@@ -6,7 +6,6 @@ from typing import Any, List, Mapping, Optional, Tuple
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from querri import Querri
-from querri.types.data import Source
 from querri._exceptions import (
     AuthenticationError,
     ConfigError,
@@ -62,36 +61,34 @@ class SourceQuerri(AbstractSource):
         """
         client = self._make_client(config)
 
-        # Auto-paginating: iterates all pages. The SDK returns plain dicts.
-        all_sources = [
-            Source.model_validate(s) for s in client.sources.list(limit=100)
-        ]
+        # Auto-paginating, 100 per page; items are dicts with "id", "name" keys
+        all_sources = list(client.sources.list(limit=100))
 
         # Optionally filter to specific source IDs
         filter_ids = config.get("source_ids", [])
         if filter_ids:
-            all_sources = [s for s in all_sources if s.id in filter_ids]
+            all_sources = [s for s in all_sources if s["id"] in filter_ids]
 
         streams = []
         for source in all_sources:
             # Fetch full schema for each source (includes column_types)
             try:
-                schema = Source.model_validate(client.sources.get(source.id))
+                schema = client.sources.get(source["id"])
             except Exception as e:
                 logger.warning(
-                    f"Skipping source {source.id}: failed to get schema: {e}"
+                    f"Skipping source {source['id']}: failed to get schema: {e}"
                 )
                 continue
 
             streams.append(
                 QuerriSourceStream(
                     client=client,
-                    source_id=schema.id,
-                    source_name=schema.name,
-                    columns=schema.columns,
-                    column_types=schema.column_types or {},
-                    row_count=schema.row_count or 0,
-                    updated_at=schema.updated_at,
+                    source_id=schema["id"],
+                    source_name=schema["name"],
+                    columns=schema["columns"],
+                    column_types=schema.get("column_types") or {},
+                    row_count=schema.get("row_count") or 0,
+                    updated_at=schema.get("updated_at"),
                 )
             )
 

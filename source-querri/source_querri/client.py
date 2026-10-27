@@ -49,7 +49,7 @@ class QuerriClient:
     def check_connection(self) -> bool:
         """Verify credentials by listing sources."""
         resp = self.session.get(
-            self._url("/data/sources"),
+            self._url("/sources"),
             timeout=REQUEST_TIMEOUT,
         )
         self._raise_for_status(resp)
@@ -58,7 +58,7 @@ class QuerriClient:
     def list_sources(self) -> List[Dict[str, Any]]:
         """List all accessible data sources."""
         resp = self.session.get(
-            self._url("/data/sources"),
+            self._url("/sources"),
             timeout=REQUEST_TIMEOUT,
         )
         self._raise_for_status(resp)
@@ -67,7 +67,7 @@ class QuerriClient:
     def get_source(self, source_id: str) -> Dict[str, Any]:
         """Get source metadata and schema."""
         resp = self.session.get(
-            self._url(f"/data/sources/{source_id}"),
+            self._url(f"/sources/{source_id}"),
             timeout=REQUEST_TIMEOUT,
         )
         self._raise_for_status(resp)
@@ -78,7 +78,7 @@ class QuerriClient:
     ) -> Dict[str, Any]:
         """Read paginated data from a source."""
         resp = self.session.get(
-            self._url(f"/data/sources/{source_id}/data"),
+            self._url(f"/sources/{source_id}/data"),
             params={"page": page, "page_size": page_size},
             timeout=REQUEST_TIMEOUT,
         )
@@ -94,7 +94,7 @@ class QuerriClient:
     def create_source(self, name: str, rows: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Create a new data source with inline data."""
         resp = self.session.post(
-            self._url("/data/sources"),
+            self._url("/sources"),
             json={"name": name, "rows": rows},
             timeout=REQUEST_TIMEOUT,
         )
@@ -104,7 +104,7 @@ class QuerriClient:
     def append_rows(self, source_id: str, rows: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Append rows to an existing source."""
         resp = self.session.post(
-            self._url(f"/data/sources/{source_id}/rows"),
+            self._url(f"/sources/{source_id}/rows"),
             json={"rows": rows},
             timeout=REQUEST_TIMEOUT,
         )
@@ -114,7 +114,7 @@ class QuerriClient:
     def replace_data(self, source_id: str, rows: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Replace all data in a source."""
         resp = self.session.put(
-            self._url(f"/data/sources/{source_id}/data"),
+            self._url(f"/sources/{source_id}/data"),
             json={"rows": rows},
             timeout=REQUEST_TIMEOUT,
         )
@@ -124,7 +124,7 @@ class QuerriClient:
     def delete_source(self, source_id: str) -> Dict[str, Any]:
         """Delete a source and its data."""
         resp = self.session.delete(
-            self._url(f"/data/sources/{source_id}"),
+            self._url(f"/sources/{source_id}"),
             timeout=REQUEST_TIMEOUT,
         )
         self._raise_for_status(resp)
