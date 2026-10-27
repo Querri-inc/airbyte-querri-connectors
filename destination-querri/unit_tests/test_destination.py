@@ -605,3 +605,10 @@ class TestEntrypoint:
         result = self._run(tmp_path, "spec")
         specs = [json.loads(line) for line in result.stdout.splitlines() if '"SPEC"' in line]
         assert specs[0]["spec"]["supported_destination_sync_modes"] == ["overwrite", "append"]
+
+
+class TestRetryDelay:
+    def test_rate_limit_waits_what_the_server_asked(self):
+        from querri._exceptions import RateLimitError
+        e = RateLimitError("slow down", status=429, retry_after=60.0)
+        assert dest_module._retry_delay(e, 0) == 60.0

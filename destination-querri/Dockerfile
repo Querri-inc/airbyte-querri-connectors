@@ -10,6 +10,8 @@ COPY pyproject.toml main.py ./
 COPY destination_querri ./destination_querri
 RUN pip install --no-cache-dir . && rm -rf /pip_cache/*
 
+# Unbuffered stdout: a STATE must reach the platform when it is emitted.
+ENV PYTHONUNBUFFERED=1
 ENV AIRBYTE_ENTRYPOINT="python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 

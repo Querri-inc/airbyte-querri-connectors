@@ -80,6 +80,7 @@ LOCAL_HTTP_HOSTS = {"localhost", "127.0.0.1", "host.docker.internal"}
 MAX_ATTEMPTS = 8
 CONFLICT_RETRY_SECONDS = 10.0
 MAX_BACKOFF_SECONDS = 30.0
+MAX_RETRY_AFTER_SECONDS = 300.0
 
 # An id that never names a real source, for the write-scope probe in check().
 _PROBE_SOURCE_ID = "00000000-0000-0000-0000-000000000000"
@@ -132,7 +133,8 @@ def _is_retryable(e: Exception, idempotent: bool) -> bool:
 
 def _retry_delay(e: Exception, attempt: int) -> float:
     if isinstance(e, RateLimitError) and getattr(e, "retry_after", None):
-        return min(float(e.retry_after), MAX_BACKOFF_SECONDS)
+        # Waiting less than the server asked only spends an attempt on another 429.
+        return min(float(e.retry_after), MAX_RETRY_AFTER_SECONDS)
     if isinstance(e, ConflictError):
         return CONFLICT_RETRY_SECONDS
     return min(2.0**attempt, MAX_BACKOFF_SECONDS)

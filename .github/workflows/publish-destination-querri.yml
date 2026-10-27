@@ -32,8 +32,10 @@ jobs:
           tag_version="${GITHUB_REF_NAME#destination-querri-v}"
           pkg_version="$(python3 -c 'import tomllib;print(tomllib.load(open("pyproject.toml","rb"))["tool"]["poetry"]["version"])')"
           meta_version="$(grep -E '^\s+dockerImageTag:' metadata.yaml | awk '{print $2}')"
-          if [ "$tag_version" != "$pkg_version" ] || [ "$tag_version" != "$meta_version" ]; then
-            echo "tag $tag_version, pyproject $pkg_version, metadata $meta_version: they must match" >&2
+          label_version="$(sed -n 's/^LABEL io.airbyte.version=//p' Dockerfile)"
+          if [ "$tag_version" != "$pkg_version" ] || [ "$tag_version" != "$meta_version" ] \
+              || [ "$tag_version" != "$label_version" ]; then
+            echo "tag $tag_version, pyproject $pkg_version, metadata $meta_version, Dockerfile $label_version: they must match" >&2
             exit 1
           fi
           echo "version=$tag_version" >> "$GITHUB_OUTPUT"
